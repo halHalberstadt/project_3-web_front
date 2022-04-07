@@ -1,5 +1,7 @@
 # Project03-Group02-CST438 (web portion) : ""
 
+<p>[link to ](https://github.com/Alvarez-Jose/project3_androidApp/pulse)</p>
+
 ## Team Members (CST438 group 2): 
  - [Jose Alvarez ()](https://github.com/Alvarez-Jose)
  - [Orion Furnish ()](https://github.com/OrionFurnish)
