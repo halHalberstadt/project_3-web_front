@@ -1,6 +1,6 @@
 # Project03-Group02-CST438 (web portion) : ""
 
-## Team Members (CST438 group 7): 
+## Team Members (CST438 group 2): 
  - [Jose Alvarez ()](https://github.com/Alvarez-Jose)
  - [Orion Furnish ()](https://github.com/OrionFurnish)
  - [Isai Molina ()](https://github.com/isaiM6)
