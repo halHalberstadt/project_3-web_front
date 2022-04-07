@@ -8,7 +8,7 @@
 
 ### Project Description<br>
 
-&nbsp;&nbsp;&nbsp; text. 
+&nbsp;&nbsp;&nbsp; A full-stack web application that allows a user to send money to others.
 
 ### Example response:<br>
 &nbsp;&nbsp;&nbsp; Here is an example response from the API in JSON format: 
