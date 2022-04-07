@@ -31,7 +31,7 @@ Example database Fields: (for the asdf table)
 Mock-up:
 
 Diagram of database structure:
-
+![Project2_ER_Diagram_Group2 drawio](https://user-images.githubusercontent.com/90930042/162277116-eec8a98d-84b5-4ca5-9a40-8ccb6fbd2f97.png)
 
 
 ### Links<br>
