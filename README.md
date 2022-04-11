@@ -1,4 +1,4 @@
-# Project03-Group02-CST438 (web portion) : ""
+# Project03-Group02-CST438 (web portion) : "OtterBucks"
 
 [link to mobile app portion](https://github.com/Alvarez-Jose/project3_androidApp)
 
@@ -11,6 +11,10 @@
 ### Project Description<br>
 
 &nbsp;&nbsp;&nbsp; A full-stack web application that allows a user to send money to others.
+
+<p>Text Stack:
+
+&nbsp;&nbsp;&nbsp; Heroku -> mySQL -> Replit/Node.js -> Android studio</p>
 
 ### Example response:<br>
 &nbsp;&nbsp;&nbsp; Here is an example response from the API in JSON format: 
