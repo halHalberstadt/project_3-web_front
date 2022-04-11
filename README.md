@@ -12,7 +12,7 @@
 
 &nbsp;&nbsp;&nbsp; A full-stack web application that allows a user to send money to others.
 
-<p>Text Stack:
+<p>Tech Stack:
 
 &nbsp;&nbsp;&nbsp; Heroku -> mySQL -> Replit/Node.js -> Android studio</p>
 
