@@ -1,0 +1,31 @@
+{
+  "name": "project3-webfront-group2",
+  "version": "1.0.0",
+  "description": "<p>[link to ](https://github.com/Alvarez-Jose/project3_androidApp/pulse)</p>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/halHalberstadt/project_3-web_front-group_2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/halHalberstadt/project_3-web_front-group_2/issues"
+  },
+  "homepage": "https://github.com/halHalberstadt/project_3-web_front-group_2#readme",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "body-parser": "^1.20.0",
+    "ejs": "^3.1.6",
+    "express": "^4.17.3",
+    "express-session": "^1.17.2",
+    "mysql": "^2.18.1",
+    "node": "^17.7.2",
+    "node-fetch": "^3.2.3",
+    "underscore": "^1.13.2"
+  }
+}
