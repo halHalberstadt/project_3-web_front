@@ -3,10 +3,10 @@
 [link to mobile app portion](https://github.com/Alvarez-Jose/project3_androidApp)
 
 ## Team Members (CST438 group 2): 
- - [Jose Alvarez ()](https://github.com/Alvarez-Jose)
- - [Orion Furnish ()](https://github.com/OrionFurnish)
- - [Isai Molina ()](https://github.com/isaiM6)
- - [Sterling 'Hal' Halberstadt ()](https://github.com/halHalberstadt)
+ - [Jose Alvarez (Backend Expert)](https://github.com/Alvarez-Jose)
+ - [Orion Furnish (Frontend Expert)](https://github.com/OrionFurnish)
+ - [Isai Molina (Github Expert)](https://github.com/isaiM6)
+ - [Sterling 'Hal' Halberstadt (Lead)](https://github.com/halHalberstadt)
 
 ### Project Description<br>
 
