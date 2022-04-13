@@ -43,7 +43,7 @@ app.get(api_base, logger, async (req, res) => {
 });
 
 app.get(api_base+'/create_user/:username/:password/:admin/:cardListId/:userListId/:transactionListId', logger, async (req, res) => {
-  //TODO add reroute if the call fails
+  try {
   /**
   * I made the variables in this the uri names
   * but without vowels in order to distinguish them.
@@ -71,24 +71,39 @@ app.get(api_base+'/create_user/:username/:password/:admin/:cardListId/:userListI
   let rows = await executeSQL(sql, params);
   // console.log(rows);
   res.render('success');
+    
+  } catch (error) {
+    res.render('failure');
+  }
 }); // api create user
 
 // TODO retrieve user
 app.get(api_base+'/retrieve_user/:userId', logger, async (req, res) => {
+  try {
     // let usrId = req.params.userId;
     let sql = `SELECT * FROM user WHERE user_id=${req.params.userId}`;
     let rows = await executeSQL(sql);
     res.render('retrieve_u', { "user": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
 }); // api retrieve user
 
 app.get(api_base+'/retrieve_users', logger, async (req, res) => {
+  try {
     let sql = "SELECT * from user order by username asc";
     let rows = await executeSQL(sql);
   res.render('retrieve_us', { "user": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
 }); // api retrieve all users
 
 // TODO update user
 app.get(api_base+'/update_user/:userId/:username/:password/:admin/:cardListId/:userListId/:bank/:transactionListId', logger, async (req, res) => {
+  try {
   let usrid = req.params.userId
   let usrnm = req.params.username
   let usrps = req.params.password
@@ -102,13 +117,20 @@ app.get(api_base+'/update_user/:userId/:username/:password/:admin/:cardListId/:u
   let rows = await executeSQL(sql);
   // res.render('createReview', { "brands": rows });
   res.render('success');
+  } catch (error) {
+    res.render('failure');
+  }
 }); // api update user
 
 // TODO delete user
 app.get(api_base+'/delete_user/:userId', logger, async (req, res) => {
+  try {
     let sql = `DELETE FROM user WHERE user_id=${req.params.userId}`;
     let rows = await executeSQL(sql);
   res.render('success');
+  } catch (error) {
+    res.render('failure');
+  }
 }); // api delete user
 
 
