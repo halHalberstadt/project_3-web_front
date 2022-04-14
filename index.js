@@ -33,6 +33,16 @@ app.get('/', async (req, res) => {
 //TODO: signup page
 //TODO: login page
 
+app.get('/new_transaction', async (req, res) => {
+    res.render('new_transaction');
+}); // new transaction
+
+app.post("/new_transaction", async function(req, res) {
+  let targetUser = req.body.targetUser;
+  let amount = req.body.amount;
+
+});
+
 
 /** API specific routes */
 
