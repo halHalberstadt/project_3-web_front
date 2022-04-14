@@ -23,6 +23,7 @@ app.use(session({
 
 //routes
 app.get('/', async (req, res) => {
+  
   // if(!isAuthenticated){
   //  res.render('index_loggedIn');
   // } else {
@@ -31,7 +32,62 @@ app.get('/', async (req, res) => {
 }); // landing page
 
 //TODO: signup page
+app.get('/signup', logger, async (req, res) => {
+  // NOTE: UNFINISHED
+  let username = req.body.entered_username;
+  let userPassword = req.body.entered_psw;
+  console.log(userPassword);
+  
+  let passwordHash = "";
+  
+  let sql = ``;
+  let data = await executeSQL(sql, [username] );
+  
+  req.session.authenticated = false;
+  req.session.destroy();
+  res.redirect('/');
+  res.render('signup');
+}); // signup
+
 //TODO: login page
+app.get('/login', logger, async (req, res) => {
+  // NOTE: UNFINISHED
+  let username = req.body.entered_username;
+  let userPassword = req.body.entered_psw;
+  console.log(userPassword);
+  
+  let passwordHash = "";
+  
+  let sql = `SELECT username, password 
+            FROM user
+            WHERE username = ? `;
+  let data = await executeSQL(sql, [username] );        
+  if (data.length > 0) {  //checks if record found
+    passwordHash = data[0].password;
+  }
+     
+  const matchPassword = await bcrypt.compare(userPassword, passwordHash);
+  console.log(matchPassword);
+
+  if (matchPassword) {
+    alert("login success");
+    req.session.authenticated = true;
+    res.render('home');
+  } else {
+    alert("login failed");
+    res.render('login', {"error":"Invalid credentials"});
+  }
+}); // login
+
+app.get('/new_transaction', async (req, res) => {
+    res.render('new_transaction');
+}); // new transaction
+
+app.post("/new_transaction", async function(req, res) {
+  let targetUser = req.body.targetUser;
+  let amount = req.body.amount;
+
+});
 
 
 /** API specific routes */
@@ -41,6 +97,8 @@ let api_base = "/api";
 app.get(api_base, logger, async (req, res) => {
   res.render('api_base');
 });
+
+/** USER CRUD FOR API */
 
 app.get(api_base+'/create_user/:username/:password/:admin/:cardListId/:userListId/:transactionListId', logger, async (req, res) => {
   try {
@@ -77,7 +135,6 @@ app.get(api_base+'/create_user/:username/:password/:admin/:cardListId/:userListI
   }
 }); // api create user
 
-// TODO retrieve user
 app.get(api_base+'/retrieve_user/:userId', logger, async (req, res) => {
   try {
     // let usrId = req.params.userId;
@@ -101,7 +158,6 @@ app.get(api_base+'/retrieve_users', logger, async (req, res) => {
   }
 }); // api retrieve all users
 
-// TODO update user
 app.get(api_base+'/update_user/:userId/:username/:password/:admin/:cardListId/:userListId/:bank/:transactionListId', logger, async (req, res) => {
   try {
   let usrid = req.params.userId
@@ -122,7 +178,6 @@ app.get(api_base+'/update_user/:userId/:username/:password/:admin/:cardListId/:u
   }
 }); // api update user
 
-// TODO delete user
 app.get(api_base+'/delete_user/:userId', logger, async (req, res) => {
   try {
     let sql = `DELETE FROM user WHERE user_id=${req.params.userId}`;
@@ -132,6 +187,90 @@ app.get(api_base+'/delete_user/:userId', logger, async (req, res) => {
     res.render('failure');
   }
 }); // api delete user
+
+/** END OF USER API */
+
+/** TRANSACTION CRUD FOR API */
+
+app.get(api_base+'/create_transaction/:tid/:amt/:cur/:fin/:sid/:rid/:desc', logger, async (req, res) => {
+  try {
+  /**
+  * I made the variables in this the uri names
+  * but without vowels in order to distinguish them.
+  */
+  let trnsctn = req.params.tid;
+  let amnt = req.params.amt;
+  let crrncy = req.params.cur;
+  let fnlzd = req.params.fin;
+  let sndng = req.params.sid;
+  let rcvng = req.params.rid;
+  let dscrptn = req.params.desc;
+  
+  let params = [trnsctn, amnt, crrncy, fnlzd, sndng, rcvng, dscrptn];
+  let sql = `INSERT INTO transaction (transaction_id, amount, currency,	is_finalized,	sending_id,	receiving_id,	description)
+            VALUES(?, ?, ?, ?, ?, ?, ?)`;
+  // console.log(params);
+  let rows = await executeSQL(sql, params);
+  // console.log(rows);
+  res.render('success');
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api create user
+
+app.get(api_base+'/retrieve_transaction/:tid', logger, async (req, res) => {
+  try {
+    let sql = `SELECT * FROM transaction WHERE transaction_id=${req.params.tid}`;
+    let rows = await executeSQL(sql);
+    res.render('retrieve_t', { "transaction": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve user
+
+app.get(api_base+'/retrieve_transactions', logger, async (req, res) => {
+  try {
+    let sql = "SELECT * from transaction order by transaction_id asc";
+    let rows = await executeSQL(sql);
+  res.render('retrieve_ts', { "transaction": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve all users
+
+app.get(api_base+'/update_transaction/:tid/:amt/:cur/:fin/:sid/:rid/:desc', logger, async (req, res) => {
+  try {
+  let trnsctn = req.params.tid;
+  let amnt = req.params.amt;
+  let crrncy = req.params.cur;
+  let fnlzd = req.params.fin;
+  let sndng = req.params.sid;
+  let rcvng = req.params.rid;
+  let dscrptn = req.params.desc;
+  
+  let sql = `UPDATE transaction SET amount='${amnt}', currency='${crrncy}',	is_finalized='${fnlzd}', sending_id='${sndng}', receiving_id='${rcvng}',	description='${dscrptn}' WHERE transaction_id='${trnsctn}';`;
+  let rows = await executeSQL(sql);
+  // res.render('createReview', { "brands": rows });
+  res.render('success');
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api update user
+
+app.get(api_base+'/delete_transaction/:tid', logger, async (req, res) => {
+  try {
+    let sql = `DELETE FROM transaction WHERE user_id=${req.params.tid}`;
+    let rows = await executeSQL(sql);
+  res.render('success');
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api delete user
+
+/** END OF TRANSACTION API*/
 
 
 //functions
