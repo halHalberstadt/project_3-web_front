@@ -158,7 +158,7 @@ app.get(api_base+'/retrieve_user/:userId', logger, async (req, res) => {
     // let usrId = req.params.userId;
     let sql = `SELECT * FROM user WHERE user_id=${req.params.userId}`;
     let rows = await executeSQL(sql);
-    res.render('retrieve_u', { "user": rows });
+    res.render('retrieve', { "data": rows });
     
   } catch (error) {
     res.render('failure');
@@ -169,7 +169,7 @@ app.get(api_base+'/retrieve_users', logger, async (req, res) => {
   try {
     let sql = "SELECT * from user order by username asc";
     let rows = await executeSQL(sql);
-  res.render('retrieve_us', { "user": rows });
+    res.render('retrieve', { "data": rows });
     
   } catch (error) {
     res.render('failure');
@@ -241,7 +241,7 @@ app.get(api_base+'/retrieve_transaction/:tid', logger, async (req, res) => {
   try {
     let sql = `SELECT * FROM transaction WHERE transaction_id=${req.params.tid}`;
     let rows = await executeSQL(sql);
-    res.render('retrieve_t', { "transaction": rows });
+    res.render('retrieve', { "data": rows });
     
   } catch (error) {
     res.render('failure');
@@ -252,7 +252,7 @@ app.get(api_base+'/retrieve_transactions', logger, async (req, res) => {
   try {
     let sql = "SELECT * from transaction order by transaction_id asc";
     let rows = await executeSQL(sql);
-  res.render('retrieve_ts', { "transaction": rows });
+    res.render('retrieve', { "data": rows });
     
   } catch (error) {
     res.render('failure');
@@ -324,7 +324,7 @@ app.get(api_base+'/retrieve_card/:cid', logger, async (req, res) => {
   try {
     let sql = `SELECT * FROM card WHERE transaction_id=${req.params.cid}`;
     let rows = await executeSQL(sql);
-    res.render('retrieve_t', { "transaction": rows });
+    res.render('retrieve', { "data": rows });
     
   } catch (error) {
     res.render('failure');
@@ -335,7 +335,7 @@ app.get(api_base+'/retrieve_cards', logger, async (req, res) => {
   try {
     let sql = "SELECT * from card order by card_id asc";
     let rows = await executeSQL(sql);
-  res.render('retrieve_ts', { "transaction": rows });
+    res.render('retrieve', { "data": rows });
     
   } catch (error) {
     res.render('failure');
@@ -354,7 +354,7 @@ app.get(api_base+'/update_card/:cid/:cnum/:exp/:sec/:name/:areacode/:nick', logg
   
   let params = [card_id, card_num, cvv, holder_name, zip, card_nickname];
   
-  let sql = `UPDATE transaction SET card_num='${card_num}', expiration='${expiration}',	cvv='${cvv}', holder_name='${holder_name}', zip='${zip}',	card_nickname='${card_nickname}' WHERE card_id='${card_id}';`;
+  let sql = `UPDATE card SET card_num='${card_num}', expiration='${expiration}',	cvv='${cvv}', holder_name='${holder_name}', zip='${zip}',	card_nickname='${card_nickname}' WHERE card_id='${card_id}';`;
   let rows = await executeSQL(sql);
   // res.render('createReview', { "brands": rows });
   res.render('success');
@@ -378,11 +378,246 @@ app.get(api_base+'/delete_card/:cid', logger, async (req, res) => {
 /** LISTS FOR API */
 // all creates
 
+app.get(api_base+'/create_card_list/:clid/:cid', logger, async (req, res) => {
+  try {
+  /**
+  * I made the variables in this the uri names
+  * but without vowels in order to distinguish them.
+  */
+    // card_id	card_num	expiration	cvv	holder_name	zip	card_nickname
+  let card_list_id = req.params.clid;
+  let card_id = req.params.cid;
+  
+  let params = [card_id, card_num];
+  let sql = `INSERT INTO card_list (card_list_id,	card_id)
+            VALUES(?, ?)`;
+  // console.log(params);
+  let rows = await executeSQL(sql, params);
+  // console.log(rows);
+  res.render('success');
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api create card list
+
+app.get(api_base+'/create_transaction_list/:tlid/:uid/:tid', logger, async (req, res) => {
+  try {
+  /**
+  * I made the variables in this the uri names
+  * but without vowels in order to distinguish them.
+  */
+    // card_id	card_num	expiration	cvv	holder_name	zip	card_nickname
+  let transaction_list_id = req.params.tlid;
+  let user_id = req.params.uid;
+  let transaction_id = req.params.tid;
+  
+  let params = [transaction_list_id, user_id, transaction_id];
+  let sql = `INSERT INTO transaction_list (transaction_list_id, user_id,	transaction_id)
+            VALUES(?, ?, ?)`;
+  // console.log(params);
+  let rows = await executeSQL(sql, params);
+  // console.log(rows);
+  res.render('success');
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api create transaction list
+
+app.get(api_base+'/create_user_list/:oid/:otheruid', logger, async (req, res) => {
+  try {
+  /**
+  * I made the variables in this the uri names
+  * but without vowels in order to distinguish them.
+  */
+    // card_id	card_num	expiration	cvv	holder_name	zip	card_nickname
+  let owner_id = req.params.oid;
+  let other_user_id = req.params.otheruid;
+  
+  let params = [owner_id, other_user_id];
+  let sql = `INSERT INTO user_list (owner_id,	other_user_id)
+            VALUES(?, ?)`;
+  // console.log(params);
+  let rows = await executeSQL(sql, params);
+  // console.log(rows);
+  res.render('success');
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api create user list
+
 // all retrieves
 
+app.get(api_base+'/retrieve_card_list/:clid', logger, async (req, res) => {
+  try {
+    let sql = `SELECT * FROM card_list WHERE card_list_id=${req.params.clid}`;
+    let rows = await executeSQL(sql);
+    res.render('retrieve', { "data": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve card list
+
+app.get(api_base+'/retrieve_card_lists', logger, async (req, res) => {
+  try {
+    let sql = "SELECT * from card_list order by card_list_id asc";
+    let rows = await executeSQL(sql);
+    res.render('retrieve', { "data": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve all card lists
+
+app.get(api_base+'/retrieve_transaction_list/:tlid', logger, async (req, res) => {
+  try {
+    let sql = `SELECT * FROM card WHERE transaction_list_id=${req.params.tlid}`;
+    let rows = await executeSQL(sql);
+    res.render('retrieve', { "data": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve card list
+
+app.get(api_base+'/retrieve_transaction_lists', logger, async (req, res) => {
+  try {
+    let sql = "SELECT * from transaction_list order by transaction_list_id asc";
+    let rows = await executeSQL(sql);
+    res.render('retrieve', { "data": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve all transaction lists
+
+app.get(api_base+'/retrieve_user_list/:ulid', logger, async (req, res) => {
+  try {
+    let sql = `SELECT * FROM user_list WHERE owner_id=${req.params.ulid}`;
+    let rows = await executeSQL(sql);
+    res.render('retrieve', { "data": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve user list
+
+app.get(api_base+'/retrieve_user_lists', logger, async (req, res) => {
+  try {
+    let sql = "SELECT * from user_list order by owner_id asc";
+    let rows = await executeSQL(sql);
+    res.render('retrieve', { "data": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve all user lists
+
+app.get(api_base+'/retrieve_lists', logger, async (req, res) => {
+  try {
+    let sql1 = "SELECT * from card_list order by card_list_id asc";
+    let rows1 = await executeSQL(sql1);
+    let sql2 = "SELECT * from transaction_list order by transaction_list_id asc";
+    let rows2 = await executeSQL(sql2);
+    let sql3 = "SELECT * from user_list order by owner_id asc";
+    let rows3 = await executeSQL(sql3);
+    res.render('retrieve_all', { "data1": rows1, "data2": rows2, "data3": rows3 });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve all lists
+
+// end retrieves
+
 // all updates
+app.get(api_base+'/update_card_list/:clid/:cid', logger, async (req, res) => {
+  try {
+  let card_list_id = req.params.clid;
+  let card_id = req.params.cid;
+  
+  let params = [card_id, card_num];
+  
+  let sql = `UPDATE transaction SET card_id='${card_id}' WHERE card_list_id='${card_list_id}';`;
+  let rows = await executeSQL(sql);
+  // res.render('createReview', { "brands": rows });
+  res.render('success');
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api update user_list
+
+app.get(api_base+'/update_transaction_list/:tlid/:uid/:tid', logger, async (req, res) => {
+  try {
+  let transaction_list_id = req.params.tlid;
+  let user_list_id = req.params.uid;
+  let transaction_id = req.params.tid;
+  
+  let params = [transaction_list_id, user_list_id, cvv];
+  
+  let sql = `UPDATE transaction SET user_list_id='${user_list_id}', transaction_id='${transaction_id}' WHERE transaction_list_id='${transaction_list_id}';`;
+  let rows = await executeSQL(sql);
+  // res.render('createReview', { "brands": rows });
+  res.render('success');
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api update user_list
+
+app.get(api_base+'/update_user_list/:oid/:otheruid', logger, async (req, res) => {
+  try {
+  let owner_id = req.params.oid;
+  let other_user_id = req.params.otheruid;
+  
+  let params = [card_id, card_num];
+  
+  let sql = `UPDATE transaction SET other_user_id='${other_user_id}' WHERE owner_id='${owner_id}';`;
+  let rows = await executeSQL(sql);
+  // res.render('createReview', { "brands": rows });
+  res.render('success');
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api update user_list
+
+// end updates
 
 // all deletes
+
+app.get(api_base+'/delete_card_list/:clid', logger, async (req, res) => {
+  try {
+    let sql = `DELETE FROM card_list WHERE card_list_id=${req.params.clid}`;
+    let rows = await executeSQL(sql);
+  res.render('success');
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api delete user_list
+
+app.get(api_base+'/delete_transaction_list/:tlid', logger, async (req, res) => {
+  try {
+    let sql = `DELETE FROM transaction_list WHERE transaction_list_id=${req.params.tlid}`;
+    let rows = await executeSQL(sql);
+  res.render('success');
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api delete user_list
+
+app.get(api_base+'/delete_user_list/ocid', logger, async (req, res) => {
+  try {
+    let sql = `DELETE FROM user_list WHERE owner_id=${req.params.oid}`;
+    let rows = await executeSQL(sql);
+  res.render('success');
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api delete user_list
+
+// end deletes
 
 /** END OF LISTS API*/
 
