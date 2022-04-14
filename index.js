@@ -4,7 +4,8 @@ const app = express();
 const pool = dbConnection();
 const bcrypt = require('bcrypt');
 const session = require('express-session');
-const port = 3000;
+const port = 3000
+const saltRounds = 10;
 
 // middleware
 app.use(express.json());
@@ -41,13 +42,20 @@ app.post('/signup', logger, async (req, res) => {
   // NOTE: UNFINISHED
   let username = req.body.uname;
   let userPassword = req.body.psw;
+  let userPasswordRepeat = req.body.psw_repeat;
   console.log(userPassword);
-  
-  let passwordHash = "";
-  
-  let sql = ``;
-  let data = await executeSQL(sql, [username] );
-  
+
+  if(userPassword == userPasswordRepeat){
+    bcrypt.hash(userPassword, saltRounds, async function(err, hash) {
+      // Store hash password and username in DB.
+      userPassword = hash;
+      let sql = `INSERT INTO user (username, password) VALUES (?, ?)`;
+    
+      let params = [username, userPassword];
+      let userData = await executeSQL(sql,params); 
+    });
+  }
+
   req.session.authenticated = false;
   req.session.destroy();
   res.redirect('/');
@@ -282,6 +290,101 @@ app.get(api_base+'/delete_transaction/:tid', logger, async (req, res) => {
 
 /** END OF TRANSACTION API*/
 
+/** CARD CRUD FOR API */
+
+app.get(api_base+'/create_card/:cid/:cnum/:exp/:sec/:name/:areacode/:nick', logger, async (req, res) => {
+  try {
+  /**
+  * I made the variables in this the uri names
+  * but without vowels in order to distinguish them.
+  */
+    // card_id	card_num	expiration	cvv	holder_name	zip	card_nickname
+  let card_id = req.params.cid;
+  let card_num = req.params.cnum;
+  let expiration = req.params.exp;
+  let cvv = req.params.sec;
+  let holder_name = req.params.name;
+  let zip = req.params.areacode;
+  let card_nickname = req.params.nick;
+  
+  let params = [card_id, card_num, cvv, holder_name, zip, card_nickname];
+  let sql = `INSERT INTO card (card_id,	card_num, expiration,	cvv,	holder_name,	zip,	card_nickname)
+            VALUES(?, ?, ?, ?, ?, ?, ?)`;
+  // console.log(params);
+  let rows = await executeSQL(sql, params);
+  // console.log(rows);
+  res.render('success');
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api create user
+
+app.get(api_base+'/retrieve_card/:cid', logger, async (req, res) => {
+  try {
+    let sql = `SELECT * FROM card WHERE transaction_id=${req.params.cid}`;
+    let rows = await executeSQL(sql);
+    res.render('retrieve_t', { "transaction": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve user
+
+app.get(api_base+'/retrieve_cards', logger, async (req, res) => {
+  try {
+    let sql = "SELECT * from card order by card_id asc";
+    let rows = await executeSQL(sql);
+  res.render('retrieve_ts', { "transaction": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve all users
+
+app.get(api_base+'/update_card/:cid/:cnum/:exp/:sec/:name/:areacode/:nick', logger, async (req, res) => {
+  try {
+  let card_id = req.params.cid;
+  let card_num = req.params.cnum;
+  let expiration = req.params.exp;
+  let cvv = req.params.sec;
+  let holder_name = req.params.name;
+  let zip = req.params.areacode;
+  let card_nickname = req.params.nick;
+  
+  let params = [card_id, card_num, cvv, holder_name, zip, card_nickname];
+  
+  let sql = `UPDATE transaction SET card_num='${card_num}', expiration='${expiration}',	cvv='${cvv}', holder_name='${holder_name}', zip='${zip}',	card_nickname='${card_nickname}' WHERE card_id='${card_id}';`;
+  let rows = await executeSQL(sql);
+  // res.render('createReview', { "brands": rows });
+  res.render('success');
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api update user
+
+app.get(api_base+'/delete_card/:cid', logger, async (req, res) => {
+  try {
+    let sql = `DELETE FROM card WHERE card_id=${req.params.cid}`;
+    let rows = await executeSQL(sql);
+  res.render('success');
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api delete user
+
+/** END OF CARD API*/
+
+/** LISTS FOR API */
+// all creates
+
+// all retrieves
+
+// all updates
+
+// all deletes
+
+/** END OF LISTS API*/
 
 //functions
 async function executeSQL(sql, params) {
