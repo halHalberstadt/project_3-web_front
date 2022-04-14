@@ -32,10 +32,15 @@ app.get('/', async (req, res) => {
 }); // landing page
 
 //TODO: signup page
-app.get('/signup', logger, async (req, res) => {
+
+app.get('/signup', async (req, res) => {
+  res.render('signup');
+});
+
+app.post('/signup', logger, async (req, res) => {
   // NOTE: UNFINISHED
-  let username = req.body.entered_username;
-  let userPassword = req.body.entered_psw;
+  let username = req.body.uname;
+  let userPassword = req.body.psw;
   console.log(userPassword);
   
   let passwordHash = "";
@@ -50,10 +55,15 @@ app.get('/signup', logger, async (req, res) => {
 }); // signup
 
 //TODO: login page
-app.get('/login', logger, async (req, res) => {
+
+app.get('/login', async (req, res) => {
+  res.render('login');
+});
+
+app.post('/login', logger, async (req, res) => {
   // NOTE: UNFINISHED
-  let username = req.body.entered_username;
-  let userPassword = req.body.entered_psw;
+  let username = req.body.uname;
+  let userPassword = req.body.psw;
   console.log(userPassword);
   
   let passwordHash = "";
