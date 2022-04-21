@@ -98,14 +98,57 @@ app.post('/login', logger, async (req, res) => {
 }); // login
 
 app.get('/new_transaction', async (req, res) => {
-    res.render('new_transaction');
-}); // new transaction
+  let userId = 1; // NOTE: Temporary, should be whatever user is logged in
+  res.render('new_transaction', {"userId":userId});
+});
 
 app.post("/new_transaction", async function(req, res) {
-  let targetUser = req.body.targetUser;
-  let amount = req.body.amount;
+  try {
+    let amt = req.body.amt;
+    let cur = req.body.cur;
+    let is_final = false;
+    let sid = req.body.sid;
+    let rid = req.body.rid;
+    let desc = req.body.desc;
 
-});
+    // Get user bank
+    let getBankSql = `SELECT bank FROM user WHERE user_id = ?`;
+    let bank = await executeSQL(getBankSql, [sid]);
+    // TODO: Check if bank has funds available
+    if (bank < amt) {
+      // Do something
+    }
+    
+    let params = [amt, cur, is_final, sid, rid, desc];
+    let sql = `INSERT INTO transaction (amount, currency, is_finalized,	sending_id,	receiving_id,	description)
+              VALUES(?, ?, ?, ?, ?, ?)`;
+    let rows = await executeSQL(sql, params);
+    res.redirect('/');
+  } catch (error) {
+    res.redirect('/new_transaction');
+  }
+}); // new transaction
+
+app.post("/accept_transaction", async function(req, res) {
+  // NOTE: UNFINISHED
+  let tid = req.body.tid;
+  // Get transaction
+  let getTransactionSql = `SELECT * FROM transaction WHERE transaction_id = ?`;
+  let transaction = await executeSQL(getTransactionSql, [tid]);
+  // Get user bank
+  let getBankSql = `SELECT bank FROM user WHERE user_id = ?`;
+  let bank = await executeSQL(getBankSql, [transaction.sid]);
+  // TODO: Check if bank has funds available
+  if (bank < amt) {
+    // Do something
+  }
+  // Update bank value
+  bank -= amt;
+  let params = [bank, transaction.sid];
+  let updateBankSql = `UPDATE user SET bank=? WHERE user_id=?`;
+  let rows = await executeSQL(updateBankSql);
+  res.redirect('/');
+}); // accept transaction
 
 
 /** API specific routes */
@@ -323,7 +366,7 @@ app.get(api_base+'/create_card/*', logger, async (req, res) => {
 
 app.get(api_base+'/retrieve_card/*', logger, async (req, res) => {
   try {
-    let sql = `SELECT * FROM card WHERE transaction_id=${req.query.cid}`;
+    let sql = `SELECT * FROM card WHERE card_id=${req.query.cid}`;
     let rows = await executeSQL(sql);
     res.render('retrieve', { "data": rows });
     
