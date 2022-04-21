@@ -90,7 +90,27 @@ app.post('/login', logger, async (req, res) => {
   if (matchPassword) {
     alert("login success");
     req.session.authenticated = true;
-    res.render('home');
+    sql = `SELECT * FROM user WHERE username = ?`;
+    let userData = await executeSQL(sql, username);
+    
+    
+    // Setting sessions variables for logged in user
+    req.session.userID = userData[0].user_id;
+    req.session.username = userData[0].username;
+    req.session.isAdmin = userData[0].admin;
+    req.session.bank = userData[0].bank;
+    req.session.cardListID = userData[0].card_list_id;
+    req.session.userListID = userData[0].user_list_id;
+    req.session.transListID = userData[0].transaction_list_id;
+    console.log("userId = " + req.session.userID);
+    console.log("username = " + req.session.username);
+    console.log("isAdmin = " + req.session.isAdmin);
+    console.log("bank = " + req.session.bank);
+    console.log("userListId = " + req.session.userListID);
+    console.log("cardListId = " + req.session.cardListID);
+    console.log("transListId = " + userData[0].transaction_list_id);
+   
+    res.render('home', {"userData":userData});
   } else {
     alert("login failed");
     res.render('login', {"error":"Invalid credentials"});
@@ -709,6 +729,8 @@ function isAuthenticated(req,res,next){
   }
 
 }
+
+
 
 function logger(req,res,next){
   // console.log("logger: " + res);
