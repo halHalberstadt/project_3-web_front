@@ -1,11 +1,21 @@
 <%-include("partials/header.ejs")%>
   
-<body>
-  <p>Target</p>
-  <input type="text">
-  <p>Amount</p>
-  <input type="text">
-  <button> Send </button>
-</body>
+<form action="/new_transaction" method="POST">
+  <div>
+    <label for="rid"><b>Target</b></label>
+    <input type="text" placeholder="Enter Target ID" name="rid" required>
+
+    <label for="amt"><b>Amount</b></label>
+    <input type="number" placeholder="Enter Amount" name="amt" min="1" oninput="validity.valid||(value='');" required>
+
+    <label for="desc"><b>Target</b></label>
+    <input type="text" placeholder="Enter Description" name="desc" value = "">
+
+    <input type="hidden" name="sid" value="<%=userId%>">
+    <input type="hidden" name="cur" value="$">
+        
+    <button type="submit">Send</button>
+  </div>
+</form>
   
 <%-include("partials/footer.ejs")%>
