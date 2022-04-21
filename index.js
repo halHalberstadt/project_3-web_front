@@ -180,7 +180,7 @@ app.get(api_base+'/create_user/*', logger, async (req, res) => {
   // console.log(usrLstId);
   let trnsctnLstId = req.query.userListId;
   // console.log(trnsctnLstId);
-  let rounds = 12;
+  let rounds = saltRounds;
   
   hashword = bcrypt.hashSync(pswrd, rounds);
   //console.log(password);
@@ -518,7 +518,7 @@ app.get(api_base+'/retrieve_card_lists', logger, async (req, res) => {
 
 app.get(api_base+'/retrieve_transaction_list/*', logger, async (req, res) => {
   try {
-    let sql = `SELECT * FROM card WHERE transaction_list_id=${req.query.tlid}`;
+    let sql = `SELECT * FROM transaction_list WHERE transaction_list_id=${req.query.tlid}`;
     let rows = await executeSQL(sql);
     res.render('retrieve', { "data": rows });
     
@@ -585,7 +585,7 @@ app.get(api_base+'/update_card_list/*', logger, async (req, res) => {
   
   let params = [card_id, card_num];
   
-  let sql = `UPDATE transaction SET card_id='${card_id}' WHERE card_list_id='${card_list_id}';`;
+  let sql = `UPDATE card_list SET card_id='${card_id}' WHERE card_list_id='${card_list_id}';`;
   let rows = await executeSQL(sql);
   // res.render('createReview', { "brands": rows });
   res.render('success');
@@ -602,7 +602,7 @@ app.get(api_base+'/update_transaction_list/*', logger, async (req, res) => {
   
   let params = [transaction_list_id, user_list_id, cvv];
   
-  let sql = `UPDATE transaction SET user_list_id='${user_list_id}', transaction_id='${transaction_id}' WHERE transaction_list_id='${transaction_list_id}';`;
+  let sql = `UPDATE transaction_list SET user_list_id='${user_list_id}', transaction_id='${transaction_id}' WHERE transaction_list_id='${transaction_list_id}';`;
   let rows = await executeSQL(sql);
   // res.render('createReview', { "brands": rows });
   res.render('success');
@@ -618,7 +618,7 @@ app.get(api_base+'/update_user_list/*', logger, async (req, res) => {
   
   let params = [card_id, card_num];
   
-  let sql = `UPDATE transaction SET other_user_id='${other_user_id}' WHERE owner_id='${owner_id}';`;
+  let sql = `UPDATE user_list SET other_user_id='${other_user_id}' WHERE owner_id='${owner_id}';`;
   let rows = await executeSQL(sql);
   // res.render('createReview', { "brands": rows });
   res.render('success');
