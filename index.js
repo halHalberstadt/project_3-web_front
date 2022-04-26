@@ -118,7 +118,7 @@ app.post('/login', logger, async (req, res) => {
 }); // login
 
 app.get('/new_transaction', async (req, res) => {
-  let userId = 1; // NOTE: Temporary, should be whatever user is logged in
+  let userId = req.session.userID;
   res.render('new_transaction', {"userId":userId});
 });
 
@@ -148,6 +148,14 @@ app.post("/new_transaction", async function(req, res) {
     res.redirect('/new_transaction');
   }
 }); // new transaction
+
+app.get('/view_transactions', async (req, res) => {
+  // NOTE: UNFINISHED
+  let userId = req.session.userID;
+  let getTransactionsSql = `SELECT * FROM transaction WHERE sending_id = ?`;
+  let transactions = await executeSQL(getTransactionsSql, [userId]);
+  res.render('view_transactions', {"userId":userId, "transactions":transactions});
+});
 
 app.post("/accept_transaction", async function(req, res) {
   // NOTE: UNFINISHED

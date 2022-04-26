@@ -1,0 +1,16 @@
+<%-include("partials/header.ejs")%>
+
+<% for(element in transactions) { %>
+<div>
+  <p>
+    Sending:
+    <% element.sending_id %>
+    Recieving:
+    <% element.sending_id %>
+    Amount:
+    <% element.amount %>
+  </p>
+</div>
+<% } %>
+  
+<%-include("partials/footer.ejs")%>
