@@ -154,8 +154,9 @@ app.get('/view_transactions', async (req, res) => {
   let userId = req.session.userID;
   let getTransactionsSql = `SELECT * FROM transaction WHERE sending_id = ?`;
   let transactions = await executeSQL(getTransactionsSql, [userId]);
+  console.log(transactions);
   res.render('view_transactions', {"userId":userId, "transactions":transactions});
-});
+}); // view transactions
 
 app.post("/accept_transaction", async function(req, res) {
   // NOTE: UNFINISHED
