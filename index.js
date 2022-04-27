@@ -62,10 +62,17 @@ app.post('/signup', logger, async (req, res) => {
   res.render('signup');
 }); // signup
 
-//TODO: login page
 
 app.get('/login', async (req, res) => {
   res.render('login');
+});
+
+app.get('/home', isAuthenticated, async (req, res) => {
+  res.render('home');
+});
+
+app.get('/friends', isAuthenticated, async (req, res) => {
+  res.render('home');
 });
 
 app.post('/login', logger, async (req, res) => {
