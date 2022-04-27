@@ -500,8 +500,8 @@ app.get(api_base+'/create_user_list/*', logger, async (req, res) => {
   let other_user_id = req.query.otheruid;
   
   let params = [owner_id, other_user_id];
-  let sql = `INSERT INTO user_list (owner_id,	other_user_id)
-            VALUES(?, ?)`;
+  let sql = `INSERT INTO user_list (owner_id,	other_user_id, is_accepted)
+            VALUES(?, ?, 0)`;
   // console.log(params);
   let rows = await executeSQL(sql, params);
   // console.log(rows);
@@ -635,10 +635,11 @@ app.get(api_base+'/update_user_list/*', logger, async (req, res) => {
   try {
   let owner_id = req.query.oid;
   let other_user_id = req.query.otheruid;
+  let isacc = req.query.isaccept;
   
   let params = [card_id, card_num];
   
-  let sql = `UPDATE user_list SET other_user_id='${other_user_id}' WHERE owner_id='${owner_id}';`;
+  let sql = `UPDATE user_list SET other_user_id=${other_user_id} WHERE owner_id=${owner_id}, is_accepted=${isacc}`;
   let rows = await executeSQL(sql);
   // res.render('createReview', { "brands": rows });
   res.render('success');
