@@ -118,7 +118,7 @@ app.post('/login', logger, async (req, res) => {
 }); // login
 
 app.get('/new_transaction', async (req, res) => {
-  let userId = 1; // NOTE: Temporary, should be whatever user is logged in
+  let userId = req.session.userID;
   res.render('new_transaction', {"userId":userId});
 });
 
@@ -149,25 +149,73 @@ app.post("/new_transaction", async function(req, res) {
   }
 }); // new transaction
 
+app.get('/view_transactions', async (req, res) => {
+  // NOTE: UNFINISHED
+  let userId = req.session.userID;
+  let getTransactionsSql = `SELECT * FROM transaction WHERE sending_id = ? OR receiving_id = ? ORDER BY CASE WHEN receiving_id LIKE ? THEN 0 ELSE 1 END, is_finalized`;
+  let transactions = await executeSQL(getTransactionsSql, [userId, userId, userId]);
+  console.log(transactions);
+
+  // Setup extra info
+  let status = Array();
+  for(element in transactions) {
+    if(transactions[element].is_finalized) {
+      status[element] = "Finalized";
+    } else {
+      status[element] = "Pending";
+    }
+  }
+
+  let type = Array();
+  for(element in transactions) {
+    if(transactions[element].sending_id == userId) {
+      type[element] = "Outgoing";
+    } else {
+      type[element] = "Incoming";
+    }
+  }
+  
+  res.render('view_transactions', {
+    "userId":userId, 
+    "transactions":transactions, 
+    "status":status, 
+    "type":type});
+}); // view transactions
+
 app.post("/accept_transaction", async function(req, res) {
   // NOTE: UNFINISHED
   let tid = req.body.tid;
+  console.log("TID: " + tid);
   // Get transaction
   let getTransactionSql = `SELECT * FROM transaction WHERE transaction_id = ?`;
-  let transaction = await executeSQL(getTransactionSql, [tid]);
-  // Get user bank
+  let transaction = (await executeSQL(getTransactionSql, [tid]))[0];
+  console.log("Transaction: " + transaction);
+  // Get bank values
   let getBankSql = `SELECT bank FROM user WHERE user_id = ?`;
-  let bank = await executeSQL(getBankSql, [transaction.sid]);
-  // TODO: Check if bank has funds available
-  if (bank < amt) {
+  let senderBank = (await executeSQL(getBankSql, [transaction.sending_id]))[0].bank;
+  let recieverBank = (await executeSQL(getBankSql, [transaction.receiving_id]))[0].bank;
+  console.log("Sender Bank: " + senderBank);
+  console.log("Reciever Bank: " + recieverBank);
+  console.log("Transaction Amount: " + transaction.amount);
+  // Check if bank has funds available
+  if (senderBank < transaction.amount) {
     // Do something
   }
-  // Update bank value
-  bank -= amt;
-  let params = [bank, transaction.sid];
+  // Update bank values
+  senderBank -= transaction.amount;
+  recieverBank += transaction.amount;
+  let senderParams = [senderBank, transaction.sending_id];
+  let recieverParams = [recieverBank, transaction.receiving_id];
   let updateBankSql = `UPDATE user SET bank=? WHERE user_id=?`;
-  let rows = await executeSQL(updateBankSql);
-  res.redirect('/');
+  await executeSQL(updateBankSql, senderParams);
+  await executeSQL(updateBankSql, recieverParams);
+  
+  // Finalize transaction
+  let params = [1, tid];
+  let finalizeTransactionSql = `UPDATE transaction SET is_finalized=? WHERE transaction_id=?`;
+  let rows = await executeSQL(finalizeTransactionSql, params);
+  
+  res.redirect('/view_transactions');
 }); // accept transaction
 
 
