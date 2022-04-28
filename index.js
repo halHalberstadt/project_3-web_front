@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const port = 3000
 const saltRounds = 10;
+const fetch = require('node-fetch');
 
 // middleware
 app.use(express.json());
@@ -45,15 +46,25 @@ app.post('/signup', logger, async (req, res) => {
   let userPasswordRepeat = req.body.psw_repeat;
   console.log(userPassword);
 
-  if(userPassword == userPasswordRepeat){
-    bcrypt.hash(userPassword, saltRounds, async function(err, hash) {
+  // Check if username exists in database
+  let sql = `SELECT username 
+            FROM user
+            WHERE username = ? `;
+  let data = await executeSQL(sql, [username]);
+  
+  if(data[0].username == username){
+    res.render('signup', {"signupError":true})
+  }else{
+      if(userPassword == userPasswordRepeat){
+      bcrypt.hash(userPassword, saltRounds, async function(err, hash) {
       // Store hash password and username in DB.
       userPassword = hash;
       let sql = `INSERT INTO user (username, password) VALUES (?, ?)`;
     
       let params = [username, userPassword];
       let userData = await executeSQL(sql,params); 
-    });
+      });
+    }
   }
 
   req.session.authenticated = false;
@@ -62,10 +73,18 @@ app.post('/signup', logger, async (req, res) => {
   res.render('signup');
 }); // signup
 
-//TODO: login page
 
 app.get('/login', async (req, res) => {
   res.render('login');
+});
+
+app.get('/home', isAuthenticated, async (req, res) => {
+  res.render('home');
+});
+
+app.get('/friends', isAuthenticated, async (req, res) => {
+  let ownerID = req.session.userID;
+  res.render('friends', {"ownerID" : ownerID});
 });
 
 app.post('/login', logger, async (req, res) => {
@@ -269,6 +288,18 @@ app.get(api_base+'/retrieve_user/*', logger, async (req, res) => {
   try {
     // let usrId = req.params.userId;
     let sql = `SELECT * FROM user WHERE user_id=${req.query.userId}`;
+    let rows = await executeSQL(sql);
+    res.render('retrieve', { "data": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve user
+
+app.get(api_base+'/retrieve_account/*', logger, async (req, res) => {
+  try {
+    // let usrId = req.params.userId;
+    let sql = `SELECT * FROM user WHERE user_id=${req.query.user} AND user_id=${req.query.pass}`;
     let rows = await executeSQL(sql);
     res.render('retrieve', { "data": rows });
     
