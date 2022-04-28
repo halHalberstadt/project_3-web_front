@@ -3,6 +3,10 @@
 <% for(element in transactions) { %>
 <div>
   <p>
+    Status:
+    <%=status[element]%>    
+    Type: 
+    <%=type[element]%>  
     Sending:
     <%=transactions[element].sending_id%>
     Recieving:
@@ -10,6 +14,14 @@
     Amount:
     <%=transactions[element].amount%>
   </p>
+
+  <% if(status[element] === "Pending" && type[element] === "Incoming") { %>
+    <form action="/accept_transaction" method="POST">
+      <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
+      
+      <button type="submit">Accept</button>
+    </form>
+  <% } %>
 </div>
 <% } %>
   
