@@ -20,5 +20,8 @@
     <span class="psw">Forgot <a href="#">password?</a></span>
   </div>
 </form>
+      <% if(typeof signupError != "undefined" && signupError) { %>
+      <h4 class="error" style="color: red" >Username is taken. Please try again.</h4> 
+    <% }%> 
 
 <%- include("partials/footer.ejs")%>
