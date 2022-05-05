@@ -217,21 +217,55 @@ app.get(api_base+'/create_user/*', logger, async (req, res) => {
   }
 }); // api create user
 
+app.get(api_base+'/retrieve_user_p/*', logger, async (req, res) => {
+  try {
+    let passwordHash = "";
+    let userPassword = req.query.p;
+  
+  let sql = `SELECT user_id, username, password FROM user WHERE username = '${req.query.u}' `;
+  let data = await executeSQL(sql);        
+  if (data.length > 0) {  //checks if record found
+    passwordHash = data[0].password;
+  }
+     
+  const matchPassword = bcrypt.compare(userPassword, passwordHash);
+    if(matchPassword){
+      let rows = data[0].user_id;
+      res.render('retrieve', { "data": rows });
+    } else {
+      res.render('failure');
+    }
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve user
+
 app.get(api_base+'/retrieve_user/*', logger, async (req, res) => {
   try {
-    // let usrId = req.params.userId;
-    let sql = `SELECT * FROM user WHERE user_id=${req.query.userId}`;
+    let sql = `SELECT * FROM user WHERE username=${req.query.u} AND password=${req.query.p}`;
+    let rows = await executeSQL(sql);
+    let userData = rows[0];
+    res.render('retrieve', { "data": userData });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve user with password
+
+app.get(api_base+'/retrieve_users', logger, async (req, res) => {
+  try {
+    let sql = "SELECT * from user order by username asc";
     let rows = await executeSQL(sql);
     res.render('retrieve', { "data": rows });
     
   } catch (error) {
     res.render('failure');
   }
-}); // api retrieve user
+}); // api retrieve all users
 
-app.get(api_base+'/retrieve_users', logger, async (req, res) => {
+app.get(api_base+'/retrieve_users_and', logger, async (req, res) => {
   try {
-    let sql = "SELECT * from user order by username asc";
+    let sql = "SELECT user_id, username from user order by username asc";
     let rows = await executeSQL(sql);
     res.render('retrieve', { "data": rows });
     
@@ -315,6 +349,17 @@ app.get(api_base+'/retrieve_transaction/*', logger, async (req, res) => {
 app.get(api_base+'/retrieve_transactions', logger, async (req, res) => {
   try {
     let sql = "SELECT * from transaction order by transaction_id asc";
+    let rows = await executeSQL(sql);
+    res.render('retrieve', { "data": rows });
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api retrieve all users
+
+app.get(api_base+'/retrieve_transactions_and/*', logger, async (req, res) => {
+  try {
+    let sql = `SELECT * from transaction where sending_id=${req.query.uid} OR receiving_id=${req.query.uid} order by transaction_id asc`;
     let rows = await executeSQL(sql);
     res.render('retrieve', { "data": rows });
     
