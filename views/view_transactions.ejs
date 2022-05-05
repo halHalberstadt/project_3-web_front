@@ -1,28 +1,53 @@
 <%-include("partials/header.ejs")%>
 
-<% for(element in transactions) { %>
-<div>
-  <p>
-    Status:
-    <%=status[element]%>    
-    Type: 
-    <%=type[element]%>  
-    Sending:
-    <%=transactions[element].sending_id%>
-    Recieving:
-    <%=transactions[element].receiving_id%>
-    Amount:
-    <%=transactions[element].amount%>
-  </p>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col"> Status </th>
+      <th scope="col">Type</th>
+      <th scope="col">Sending</th>
+      <th scope="col">Recieving</th>
+      <th scope="col">Amount</th>
+      <th scope="col">Options</th>
+    </tr>
+  </thead>
+  <tbody>
+  <% for(element in transactions) { %>
+    <tr>
+      <th scope="row"><%=status[element]%></th>
+      <td><%=type[element]%></td>
+      <td><%=transactions[element].sending_id%></td>
+      <td><%=transactions[element].receiving_id%></td>
+      <td><%=transactions[element].amount%></td>
+      <td>
+      <% if(status[element] === "Pending" && type[element] === "Incoming") { %>
 
-  <% if(status[element] === "Pending" && type[element] === "Incoming") { %>
-    <form action="/accept_transaction" method="POST">
-      <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
-      
-      <button type="submit">Accept</button>
-    </form>
+        <div class="btn-group" role="group">
+        <form action="/accept_transaction" method="POST">
+          <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
+          
+          <button type="submit">Accept</button>
+        </form>
+        
+        <form action="/cancel_transaction" method="POST">
+          <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
+          
+          <button class="align_button" type="submit">Decline</button>
+        </form>
+        </div>
+      <% } %>
+  
+      <% if(status[element] === "Pending" && type[element] === "Outgoing") { %>
+        <form action="/cancel_transaction" method="POST">
+          <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
+          
+          <button type="submit">Cancel</button>
+        </form>
+      <% } %> 
+      </td>
+    </tr>
   <% } %>
-</div>
-<% } %>
+  </tbody>
+</table>
   
 <%-include("partials/footer.ejs")%>
