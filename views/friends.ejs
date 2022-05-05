@@ -14,9 +14,33 @@
   </li>
 </ul>
 
+  <form action="/friends">
   <h3>Add a friend:</h3>
-  <label for="uname"><b>Username</b></label>
-    <input type="text" placeholder="Enter Username of User" name="uname" required>
+  <label for="otheruname"><b>Username</b></label>
+    <input type="text" placeholder="Enter Username of User" name="otheruname" required>
+    <button type="submit">Send Request</button>
+  </form>
+  
+  <br>
 
+  <div>
+    <b>Your Friends:</b><br>
+    <% for(element in friendsList) { %>
+      <%=friendsList[element].username%>
+      <% if(friendsList[element].is_accepted === 0) { %>
+        (Request Pending)
+      <% } %>
+      <br>
+    <% } %>
+
+    <br>
+    <b>Friend Requests:</b><br>
+    <% for(element in incomingRequests) { %>
+      From: <%=incomingRequests[element].username%><br>
+    <% } %>
+
+  
+  </div>
+  <br>
 
 <%-include("partials/footer.ejs")%>

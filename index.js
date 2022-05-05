@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const port = 3000
 const saltRounds = 10;
-const fetch = require('node-fetch');
+//const fetch = require('node-fetch');
 
 // middleware
 app.use(express.json());
@@ -44,33 +44,33 @@ app.post('/signup', logger, async (req, res) => {
   let username = req.body.uname;
   let userPassword = req.body.psw;
   let userPasswordRepeat = req.body.psw_repeat;
-  console.log(userPassword);
 
   // Check if username exists in database
   let sql = `SELECT username 
             FROM user
             WHERE username = ? `;
   let data = await executeSQL(sql, [username]);
+  console.log(data[0]);
   
-  if(data[0].username == username){
+  if(data.length){
     res.render('signup', {"signupError":true})
   }else{
       if(userPassword == userPasswordRepeat){
       bcrypt.hash(userPassword, saltRounds, async function(err, hash) {
       // Store hash password and username in DB.
       userPassword = hash;
-      let sql = `INSERT INTO user (username, password) VALUES (?, ?)`;
+      sql = `INSERT INTO user (username, password) VALUES (?, ?)`;
     
       let params = [username, userPassword];
       let userData = await executeSQL(sql,params); 
+      req.session.authenticated = false;
+      req.session.destroy();
+      res.redirect('/');
       });
     }
   }
 
-  req.session.authenticated = false;
-  req.session.destroy();
-  res.redirect('/');
-  res.render('signup');
+
 }); // signup
 
 
@@ -81,11 +81,50 @@ app.get('/login', async (req, res) => {
 app.get('/home', isAuthenticated, async (req, res) => {
   res.render('home');
 });
+app.get('/test', async (req, res) => {
+    let sql = `SELECT * FROM user_list WHERE owner_id = 46`;
+  let friendsList = await executeSQL(sql);
+  if(!friendsList.length){
+    console.log("null returnn");
+  }
+  
+  res.redirect('/');
+});
 
 app.get('/friends', isAuthenticated, async (req, res) => {
   let ownerID = req.session.userID;
-  res.render('friends', {"ownerID" : ownerID});
+
+  //If user sends a friend request to another user, check to see if a previous request between them has been made. if not, create a new record in table "user_list"
+  console.log("type of request query: " + typeof req.query)
+  if(!Object.keys(req.query).length){
+    // if parameter is empty do nothing
+  }else{
+    let otherUsername = req.query.otheruname;
+    let sql = `SELECT user_id FROM user WHERE username = "${otherUsername}"`;
+    let otherUser= await executeSQL(sql);
+
+    let params = [ownerID, otherUser[0].user_id, ownerID, otherUser[0].user_id]
+    sql = `SELECT * FROM user_list WHERE owner_id = ? AND other_user_id = ? OR ( owner_id = ? AND other_user_id = ?)`;
+    let rows = await executeSQL(sql, params);
+
+    if(!rows.length){
+      params = [ownerID, otherUser[0].user_id, 0]
+      sql = `INSERT INTO user_list (owner_id, other_user_id, is_accepted) VALUES(?, ?, ?)`;
+      let sendRequest = await executeSQL(sql, params);
+    }
+  }
+  
+  //Returning friends list
+  sql = `SELECT * FROM user_list INNER JOIN user ON user_list.other_user_id = user.user_id WHERE owner_id=${ownerID}`;
+  let friendsList = await executeSQL(sql);
+
+  //Returning received friend request
+  sql = `SELECT * FROM user_list INNER JOIN user ON user_list.owner_id = user.user_id WHERE other_user_id=${ownerID}`;
+  let incomingRequests = await executeSQL(sql);
+  
+  res.render('friends', {"ownerID":ownerID, "friendsList":friendsList, "incomingRequests":incomingRequests});
 });
+
 
 app.post('/login', logger, async (req, res) => {
   // NOTE: UNFINISHED
@@ -121,13 +160,6 @@ app.post('/login', logger, async (req, res) => {
     req.session.cardListID = userData[0].card_list_id;
     req.session.userListID = userData[0].user_list_id;
     req.session.transListID = userData[0].transaction_list_id;
-    console.log("userId = " + req.session.userID);
-    console.log("username = " + req.session.username);
-    console.log("isAdmin = " + req.session.isAdmin);
-    console.log("bank = " + req.session.bank);
-    console.log("userListId = " + req.session.userListID);
-    console.log("cardListId = " + req.session.cardListID);
-    console.log("transListId = " + userData[0].transaction_list_id);
    
     res.render('home', {"userData":userData});
   } else {
@@ -843,8 +875,6 @@ app.get('/logout', (req, res) => {
 });
 
 function isAuthenticated(req,res,next){
-  
-  console.log("is authenticated");
 
   if (!req.session.authenticated) {
     res.redirect("/");
