@@ -170,7 +170,8 @@ app.post('/login', logger, async (req, res) => {
 
 app.get('/new_transaction', async (req, res) => {
   let userId = req.session.userID;
-  res.render('new_transaction', {"userId":userId});
+  let error = req.query.error
+  res.render('new_transaction', {"userId":userId, "error":error});
 });
 
 app.post("/new_transaction", async function(req, res) {
@@ -181,29 +182,36 @@ app.post("/new_transaction", async function(req, res) {
     let sid = req.body.sid;
     let rid = req.body.rid;
     let desc = req.body.desc;
-
     // Get user bank
     let getBankSql = `SELECT bank FROM user WHERE user_id = ?`;
-    let bank = await executeSQL(getBankSql, [sid]);
-    // TODO: Check if bank has funds available
+    let bank = (await executeSQL(getBankSql, [sid]))[0].bank;
+    let reciever = (await executeSQL(getBankSql, [rid]))[0];
+    // Check if funds are available
     if (bank < amt) {
-      // Do something
-    }
-    
-    let params = [amt, cur, is_final, sid, rid, desc];
-    let sql = `INSERT INTO transaction (amount, currency, is_finalized,	sending_id,	receiving_id,	description)
+      res.redirect('/new_transaction?error=Insufficient Funds');
+    } else if(reciever == null) {
+      res.redirect('/new_transaction?error=Target user does not exist');
+    } else {
+      // Update senders bank
+      bank -= amt;
+      let senderParams = [bank, sid];
+      let updateBankSql = `UPDATE user SET bank=? WHERE user_id=?`;
+      await executeSQL(updateBankSql, senderParams);
+      // Create transaction
+      let params = [amt, cur, is_final, sid, rid, desc];
+      let sql = `INSERT INTO transaction (amount, currency, is_finalized,	sending_id,	receiving_id,	description)
               VALUES(?, ?, ?, ?, ?, ?)`;
-    let rows = await executeSQL(sql, params);
-    res.redirect('/');
+      let rows = await executeSQL(sql, params);
+      res.redirect('/');
+    }
   } catch (error) {
     res.redirect('/new_transaction');
   }
 }); // new transaction
 
 app.get('/view_transactions', async (req, res) => {
-  // NOTE: UNFINISHED
   let userId = req.session.userID;
-  let getTransactionsSql = `SELECT * FROM transaction WHERE sending_id = ? OR receiving_id = ? ORDER BY CASE WHEN receiving_id LIKE ? THEN 0 ELSE 1 END, is_finalized`;
+  let getTransactionsSql = `SELECT * FROM transaction WHERE sending_id = ? OR receiving_id = ? ORDER BY is_finalized, CASE WHEN receiving_id LIKE ? THEN 0 ELSE 1 END`;
   let transactions = await executeSQL(getTransactionsSql, [userId, userId, userId]);
   console.log(transactions);
 
@@ -225,7 +233,7 @@ app.get('/view_transactions', async (req, res) => {
       type[element] = "Incoming";
     }
   }
-  
+
   res.render('view_transactions', {
     "userId":userId, 
     "transactions":transactions, 
@@ -234,7 +242,6 @@ app.get('/view_transactions', async (req, res) => {
 }); // view transactions
 
 app.post("/accept_transaction", async function(req, res) {
-  // NOTE: UNFINISHED
   let tid = req.body.tid;
   console.log("TID: " + tid);
   // Get transaction
@@ -243,22 +250,14 @@ app.post("/accept_transaction", async function(req, res) {
   console.log("Transaction: " + transaction);
   // Get bank values
   let getBankSql = `SELECT bank FROM user WHERE user_id = ?`;
-  let senderBank = (await executeSQL(getBankSql, [transaction.sending_id]))[0].bank;
   let recieverBank = (await executeSQL(getBankSql, [transaction.receiving_id]))[0].bank;
-  console.log("Sender Bank: " + senderBank);
   console.log("Reciever Bank: " + recieverBank);
   console.log("Transaction Amount: " + transaction.amount);
-  // Check if bank has funds available
-  if (senderBank < transaction.amount) {
-    // Do something
-  }
-  // Update bank values
-  senderBank -= transaction.amount;
+
+  // Update reciever bank
   recieverBank += transaction.amount;
-  let senderParams = [senderBank, transaction.sending_id];
   let recieverParams = [recieverBank, transaction.receiving_id];
   let updateBankSql = `UPDATE user SET bank=? WHERE user_id=?`;
-  await executeSQL(updateBankSql, senderParams);
   await executeSQL(updateBankSql, recieverParams);
   
   // Finalize transaction
@@ -268,6 +267,27 @@ app.post("/accept_transaction", async function(req, res) {
   
   res.redirect('/view_transactions');
 }); // accept transaction
+
+app.post("/cancel_transaction", async function(req, res) {
+  let tid = req.body.tid;
+  console.log("TID: " + tid);
+  let getTransactionSql = `SELECT sending_id, amount FROM transaction WHERE transaction_id = ?`;
+  let transactionInfo = (await executeSQL(getTransactionSql, [tid]))[0];
+  console.log("Sender: " + transactionInfo.sending_id);
+  // Refund sender bank
+  let getBankSql = `SELECT bank FROM user WHERE user_id = ?`;
+  let bank = (await executeSQL(getBankSql, [transactionInfo.sending_id]))[0].bank;
+  console.log("Bank before cancel: " + bank);
+  bank += transactionInfo.amount;
+  let senderParams = [bank, transactionInfo.sending_id];
+  let updateBankSql = `UPDATE user SET bank=? WHERE user_id=?`;
+  await executeSQL(updateBankSql, senderParams);
+  console.log("Bank after cancel: " + bank);
+  // Delete transaction
+  let deleteTransactionSql = `DELETE FROM transaction WHERE transaction_id=?`;
+  let rows = await executeSQL(deleteTransactionSql, [tid]);
+  res.redirect('/view_transactions');
+}); // cancel transaction
 
 
 /** API specific routes */
