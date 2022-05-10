@@ -95,7 +95,6 @@ app.get('/friends', isAuthenticated, async (req, res) => {
   let ownerID = req.session.userID;
 
   //If user sends a friend request to another user, check to see if a previous request between them has been made. if not, create a new record in table "user_list"
-  console.log("type of request query: " + typeof req.query)
   if(!Object.keys(req.query).length){
     // if parameter is empty do nothing
   }else{
@@ -117,12 +116,42 @@ app.get('/friends', isAuthenticated, async (req, res) => {
   //Returning friends list
   sql = `SELECT * FROM user_list INNER JOIN user ON user_list.other_user_id = user.user_id WHERE owner_id=${ownerID}`;
   let friendsList = await executeSQL(sql);
+  console.log('friends list: ' + friendsList)
 
   //Returning received friend request
-  sql = `SELECT * FROM user_list INNER JOIN user ON user_list.owner_id = user.user_id WHERE other_user_id=${ownerID}`;
+  sql = `SELECT * FROM user_list INNER JOIN user ON user_list.owner_id = user.user_id WHERE other_user_id=${ownerID} AND is_accepted = 0`;
   let incomingRequests = await executeSQL(sql);
   
   res.render('friends', {"ownerID":ownerID, "friendsList":friendsList, "incomingRequests":incomingRequests});
+});
+
+
+app.post('/accept_request', isAuthenticated, async (req, res) => {
+  let userID = req.session.userID;
+  let otherUserID = req.body.otheruid;
+  
+  let sql = `UPDATE user_list SET is_accepted = 1 WHERE other_user_id = ${userID} AND owner_id = ${otherUserID}`;
+  let acceptRequest = await executeSQL(sql);
+  sql = `INSERT INTO user_list (owner_id, other_user_id, is_accepted) VALUES(?, ?, ?)`;
+  params = [userID, otherUserID, 1];
+  let addFriendToOtherUser = await executeSQL(sql, params);
+
+  res.redirect('/friends');
+  
+});
+
+app.post('/deny_request', isAuthenticated, async (req, res) => {
+  let userID = req.session.userID;
+  let otherUserID = req.body.otheruid;
+  
+  let sql = `UPDATE user_list SET is_accepted = 1 WHERE other_user_id = ${userID} AND owner_id = ${otherUserID}`;
+  let acceptRequest = await executeSQL(sql);
+  sql = `INSERT INTO user_list (owner_id, other_user_id, is_accepted) VALUES(?, ?, ?)`;
+  params = [userID, otherUserID, 1];
+  let addFriendToOtherUser = await executeSQL(sql, params);
+
+  res.redirect('/friends');
+  
 });
 
 

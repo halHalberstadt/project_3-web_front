@@ -27,7 +27,7 @@
     <b>Your Friends:</b><br>
     <% for(element in friendsList) { %>
       <%=friendsList[element].username%>
-      <% if(friendsList[element].is_accepted === 0) { %>
+      <% if(friendsList[element].is_accepted === 0 && friendsList[element].owner_id === ownerID) { %>
         (Request Pending)
       <% } %>
       <br>
@@ -36,7 +36,21 @@
     <br>
     <b>Friend Requests:</b><br>
     <% for(element in incomingRequests) { %>
-      From: <%=incomingRequests[element].username%><br>
+      <div class="d-flex p-2">
+              From: <%=incomingRequests[element].username%>
+        <form action="/accept_request" method ="POST">
+          <input type="hidden" value="<%=incomingRequests[element].user_id%>" name="otheruid" required>
+          <button type="submit">Accept</button>
+      </form>
+        <form action="/deny_request" method ="POST">
+          <input type="hidden" value="<%=incomingRequests[element].user_id%>" name="otheruid" required>
+          <button type="submit">Deny</button>
+      </form>
+      
+      </div>
+
+      
+      <br>
     <% } %>
 
   
