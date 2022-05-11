@@ -466,6 +466,32 @@ app.get(api_base+'/create_transaction/*', logger, async (req, res) => {
   }
 }); // api create user
 
+app.get(api_base+'/new_transaction/*', logger, async (req, res) => {
+  try {
+  /**
+  * I made the variables in this the uri names
+  * but without vowels in order to distinguish them.
+  */
+  let amnt = req.query.amt;
+  let crrncy = req.query.cur;
+  let fnlzd = req.query.fin;
+  let sndng = req.query.sid;
+  let rcvng = req.query.rid;
+  let dscrptn = req.query.desc;
+  
+  let params = [trnsctn, amnt, crrncy, fnlzd, sndng, rcvng, dscrptn];
+  let sql = `INSERT INTO transaction (amount, currency,	is_finalized,	sending_id,	receiving_id,	description)
+            VALUES(?, ?, ?, ?, ?, ?, ?)`;
+  // console.log(params);
+  let rows = await executeSQL(sql, params);
+  // console.log(rows);
+  res.render('success');
+    
+  } catch (error) {
+    res.render('failure');
+  }
+}); // api create user
+
 app.get(api_base+'/retrieve_transaction/*', logger, async (req, res) => {
   try {
     let sql = `SELECT * FROM transaction WHERE transaction_id=${req.query.tid}`;
