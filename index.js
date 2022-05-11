@@ -81,14 +81,13 @@ app.get('/login', async (req, res) => {
 app.get('/home', isAuthenticated, async (req, res) => {
   res.render('home');
 });
-app.get('/test', async (req, res) => {
-    let sql = `SELECT * FROM user_list WHERE owner_id = 46`;
-  let friendsList = await executeSQL(sql);
-  if(!friendsList.length){
-    console.log("null returnn");
-  }
-  
-  res.redirect('/');
+
+
+app.get('/my_profile', async (req, res) => {
+  let userID = req.session.userID;
+  let sql = `SELECT * FROM user WHERE user_id = ${userID}`;
+  let myInfo= await executeSQL(sql);
+  res.render('profile', {"myInfo" : myInfo});
 });
 
 app.get('/friends', isAuthenticated, async (req, res) => {
@@ -144,11 +143,22 @@ app.post('/deny_request', isAuthenticated, async (req, res) => {
   let userID = req.session.userID;
   let otherUserID = req.body.otheruid;
   
-  let sql = `UPDATE user_list SET is_accepted = 1 WHERE other_user_id = ${userID} AND owner_id = ${otherUserID}`;
-  let acceptRequest = await executeSQL(sql);
-  sql = `INSERT INTO user_list (owner_id, other_user_id, is_accepted) VALUES(?, ?, ?)`;
-  params = [userID, otherUserID, 1];
-  let addFriendToOtherUser = await executeSQL(sql, params);
+  let sql = `DELETE FROM user_list WHERE other_user_id = ? AND owner_id = ?`;
+
+  let params = [userID, otherUserID];
+  let denyRequest = await executeSQL(sql, params);
+
+  res.redirect('/friends');
+  
+});
+
+app.post('/delete_friend', isAuthenticated, async (req, res) => {
+  let userID = req.session.userID;
+  let otherUserID = req.body.otheruid;
+  let sql = `DELETE FROM user_list WHERE (owner_id = ? AND other_user_id = ?) OR (owner_id = ? AND other_user_id = ?)`;
+  
+  let params = [userID, otherUserID, otherUserID, userID];
+  let deleteFriend = await executeSQL(sql, params);
 
   res.redirect('/friends');
   
