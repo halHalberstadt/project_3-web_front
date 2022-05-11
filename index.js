@@ -400,7 +400,7 @@ app.get(api_base+'/retrieve_user_p/*', logger, async (req, res) => {
 
 app.get(api_base+'/retrieve_user/*', logger, async (req, res) => {
   try {
-    let sql = `SELECT * FROM user WHERE username=${req.query.u} AND password=${req.query.p}`;
+    let sql = `SELECT user_id, username FROM user WHERE username=${req.query.u}`;
     let rows = await executeSQL(sql);
     let userData = rows[0];
     res.render('retrieve', { "data": userData });
