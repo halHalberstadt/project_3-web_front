@@ -1,5 +1,5 @@
 <%-include("partials/header.ejs")%>
-<ul class="nav nav-tabs">
+<ul class="nav nav-tabs justify-content-center">
   <li class="nav-item">
     <a class="nav-link" href="/home">Home</a>
   </li>
@@ -16,16 +16,18 @@
     <a class="nav-link" href="/logout">Logout</a>
   </li>
 </ul>
-
-  <form action="/friends">
-  <h3>Add a friend:</h3>
-  <label for="otheruname"><b>Username</b></label>
-    <input type="text" placeholder="Enter Username of User" name="otheruname" required>
-    <button type="submit">Send Request</button>
-  </form>
+<br>
+  <div class ="text-center">
+    <form action="/friends">
+    <h4>Add a friend:</h4>
+    <label for="otheruname"></label>
+      <input type="text" placeholder="Enter Username of User" name="otheruname" required>
+      <button class ="btn btn-primary" type="submit">Send Request</button>
+    </form>
+  </div>
   
   <br>
-
+<!--
     <b>Your Friends:</b><br>
     <% for(element in friendsList) { %>
       <div class="d-flex p-2">
@@ -64,6 +66,103 @@
 
   
   </div>
+  -->
   <br>
+  
+  <div class="container flex-column min-vw-100 text-center">
+    <% if(typeof friendsList == 'object' && friendsList.length > 0) { %>
+        <b>Friends:</b><br><br>
+      <% } else { %>
+        <p> <b>No friends yet.</b> </p>
+      <% } %>
+    
+
+    
+    <div class="row d-flex flex-grow-1 justify-content-center align-items-center">
+        <div class="col-md-8">
+            <div class="people-nearby">
+
+              
+                <% for(element in friendsList) { %>
+                  <div class="nearby-user">
+                  <div class="row">
+                    <div class="col-md-2 col-sm-2">
+                      <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="user" class="profile-photo-lg">
+                    </div>
+                    <div class="col-md-7 col-sm-7">
+                      <h5><a href="#" class="profile-link"><%=friendsList[element].username%>
+                  <% if(friendsList[element].is_accepted === 0 && friendsList[element].owner_id === ownerID) { %>
+                  (Request Pending)
+                <% } %></a></h5>
+                      <!--
+                      <p>Software Engineer</p>
+                      <p class="text-muted">500m away</p> -->
+                    </div>
+                    <div class="col-md-3 col-sm-3">
+                      <form action="/delete_friend" method ="POST">
+                        <input type="hidden" value="<%=friendsList[element].other_user_id%>" name="otheruid" required>
+                        <button class="btn btn-primary pull-right" type="submit">Delete</button>
+                      </form>
+                     
+                    </div>
+                  </div>
+                </div>
+
+    <% } %>
+        </div>
+
+
+            </div>
+    	</div>
+	</div>
+</div>
+
+  <div class="container flex-column  min-vw-100 text-center">
+        <% if(typeof incomingRequests == 'object' && incomingRequests.length > 0) { %>
+        <b>Friends Requests:</b><br><br>
+      <% } %>
+
+    
+    <div class="row d-flex flex-grow-1 justify-content-center align-items-center">
+        <div class="col-md-8">
+            <div class="people-nearby">
+
+              
+                <% for(element in incomingRequests) { %>
+                  <div class="nearby-user">
+                  <div class="row">
+                    <div class="col-md-2 col-sm-2">
+                      <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="user" class="profile-photo-lg">
+                    </div>
+                    <div class="col-md-7 col-sm-7">
+                      <h5><a href="#" class="profile-link"><%=incomingRequests[element].username%>
+                  <% if(typeof friendsList[element] != "undefined" && friendsList[element].is_accepted === 0 && friendsList[element].owner_id === ownerID) { %>
+                  (Request Pending)
+                <% } %></a></h5>
+                      <!--
+                      <p>Software Engineer</p>
+                      <p class="text-muted">500m away</p> -->
+                    </div>
+                    <div class="col-md-3 col-sm-3 d-flex p-2">
+                      <form action="/accept_request" method ="POST">
+                          <input type="hidden" value="<%=incomingRequests[element].user_id%>" name="otheruid" required>
+                          <button class="btn btn-primary pull-right" type="submit">Accept</button>
+                      </form>
+                        <form action="/deny_request" method ="POST">
+                          <input type="hidden" value="<%=incomingRequests[element].user_id%>" name="otheruid" required>
+                          <button class="btn btn-danger pull-right" type="submit">Deny</button>
+                      </form>
+                     
+                    </div>
+                  </div>
+                </div>
+
+    <% } %>
+        </div>
+
+
+            </div>
+    	</div>
+	</div>
 
 <%-include("partials/footer.ejs")%>

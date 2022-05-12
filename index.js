@@ -65,7 +65,7 @@ app.post('/signup', logger, async (req, res) => {
       let userData = await executeSQL(sql,params); 
       req.session.authenticated = false;
       req.session.destroy();
-      res.redirect('/');
+      res.render('index', {"success":true});
       });
     }
   }
@@ -78,8 +78,50 @@ app.get('/login', async (req, res) => {
   res.render('login');
 });
 
+app.post('/login', logger, async (req, res) => {
+  let username = req.body.uname;
+  let userPassword = req.body.psw;
+  console.log(userPassword);
+  
+  let passwordHash = "";
+  
+  let sql = `SELECT username, password 
+            FROM user
+            WHERE username = ? `;
+  let data = await executeSQL(sql, [username] );        
+  if (data.length > 0) {  //checks if record found
+    passwordHash = data[0].password;
+  }
+     
+  const matchPassword = await bcrypt.compare(userPassword, passwordHash);
+  console.log(matchPassword);
+
+  if (matchPassword) {
+    alert("login success");
+    req.session.authenticated = true;
+    sql = `SELECT * FROM user WHERE username = ?`;
+    let userData = await executeSQL(sql, username);
+    
+    
+    // Setting sessions variables for logged in user
+    req.session.userID = userData[0].user_id;
+    req.session.username = userData[0].username;
+    req.session.isAdmin = userData[0].admin;
+    req.session.bank = userData[0].bank;
+    req.session.cardListID = userData[0].card_list_id;
+    req.session.userListID = userData[0].user_list_id;
+    req.session.transListID = userData[0].transaction_list_id;
+
+    res.redirect('/view_transactions')
+    //res.render('home', {"userData":userData});
+  } else {
+    alert("login failed");
+    res.render('index', {"loginError":true});
+  }
+}); // login
+
 app.get('/home', isAuthenticated, async (req, res) => {
-  res.render('home');
+  res.redirect('/view_transactions');
 });
 
 
@@ -164,48 +206,6 @@ app.post('/delete_friend', isAuthenticated, async (req, res) => {
   
 });
 
-
-app.post('/login', logger, async (req, res) => {
-  // NOTE: UNFINISHED
-  let username = req.body.uname;
-  let userPassword = req.body.psw;
-  console.log(userPassword);
-  
-  let passwordHash = "";
-  
-  let sql = `SELECT username, password 
-            FROM user
-            WHERE username = ? `;
-  let data = await executeSQL(sql, [username] );        
-  if (data.length > 0) {  //checks if record found
-    passwordHash = data[0].password;
-  }
-     
-  const matchPassword = await bcrypt.compare(userPassword, passwordHash);
-  console.log(matchPassword);
-
-  if (matchPassword) {
-    alert("login success");
-    req.session.authenticated = true;
-    sql = `SELECT * FROM user WHERE username = ?`;
-    let userData = await executeSQL(sql, username);
-    
-    
-    // Setting sessions variables for logged in user
-    req.session.userID = userData[0].user_id;
-    req.session.username = userData[0].username;
-    req.session.isAdmin = userData[0].admin;
-    req.session.bank = userData[0].bank;
-    req.session.cardListID = userData[0].card_list_id;
-    req.session.userListID = userData[0].user_list_id;
-    req.session.transListID = userData[0].transaction_list_id;
-   
-    res.render('home', {"userData":userData});
-  } else {
-    alert("login failed");
-    res.render('login', {"error":"Invalid credentials"});
-  }
-}); // login
 
 app.get('/new_transaction', async (req, res) => {
   let userId = req.session.userID;
