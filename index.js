@@ -268,6 +268,7 @@ app.get('/view_transactions', async (req, res) => {
   let receivingUsernames = Array();
 
 
+  /*
   const forLoop = async _ => {
     for (let i=0; i<transactions.length; i++){
     let sql = `SELECT username FROM user WHERE user_id =${transactions[i].sending_id}`;
@@ -280,7 +281,18 @@ app.get('/view_transactions', async (req, res) => {
     receivingUsernames.push(receivingUser[element].username);  
     }
   }
-
+*/
+  async.forEachOf(transactions, function (element, i, inner_callback){
+    let sql = `SELECT username FROM user WHERE user_id =${transactions[i].sending_id}`;
+    let sendingUser = await executeSQL(sql);
+    console.log(sendingUser);
+    sendingUsernames.push(sendingUser[element].username);  
+    sql = `SELECT username FROM user WHERE user_id =${transactions[i].receiving_id}`;
+    let receivingUser = await executeSQL(sql);
+      console.log(receivingUser);
+    receivingUsernames.push(receivingUser[element].username);
+    console.log("transaction element:" + transactions[element])
+        });
   console.log("sendingUsernames: " + sendingUsernames);
   console.log("receivingUsernames: " + receivingUsernames);
 
