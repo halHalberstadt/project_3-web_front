@@ -36,11 +36,8 @@
     <tr>
       <th scope="row"><%=status[element]%></th>
       <td><%=type[element]%></td>
-      <td id = "sending_id"><%=sendingUsernames[element]%></td>
-      <td id = "receiving_id"><%=receivingUsernames[element]%></td>
-      <!--
-      <td id = "sending_id"><%=transactions[element].sending_id%></td>
-      <td id = "receiving_id"><%=transactions[element].receiving_id%></td> -->
+      <td><%=sendingUsernames[element][element].username%></td>
+      <td><%=receivingUsernames[element][element].username%></td> 
       <td><%=transactions[element].amount%></td>
       <td>
       <% if(status[element] === "Pending" && type[element] === "Incoming") { %>

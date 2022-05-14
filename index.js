@@ -264,37 +264,29 @@ app.get('/view_transactions', async (req, res) => {
       status[element] = "Pending";
     }
   }
+  let sendingIDs = Array();
+  let receivingIDs = Array();
   let sendingUsernames = Array();
   let receivingUsernames = Array();
 
-
-  /*
-  const forLoop = async _ => {
-    for (let i=0; i<transactions.length; i++){
-    let sql = `SELECT username FROM user WHERE user_id =${transactions[i].sending_id}`;
-    let sendingUser = await executeSQL(sql);
-    console.log(sendingUser);
-    sendingUsernames.push(sendingUser[element].username);  
-    sql = `SELECT username FROM user WHERE user_id =${transactions[i].receiving_id}`;
-    let receivingUser = await executeSQL(sql);
-      console.log(receivingUser);
-    receivingUsernames.push(receivingUser[element].username);  
-    }
+    for(element in transactions) {
+      sendingIDs.push(transactions[element].sending_id); 
+      receivingIDs.push(transactions[element].receiving_id); 
   }
-*/
-  async.forEachOf(transactions, function (element, i, inner_callback){
-    let sql = `SELECT username FROM user WHERE user_id =${transactions[i].sending_id}`;
-    let sendingUser = await executeSQL(sql);
-    console.log(sendingUser);
-    sendingUsernames.push(sendingUser[element].username);  
-    sql = `SELECT username FROM user WHERE user_id =${transactions[i].receiving_id}`;
-    let receivingUser = await executeSQL(sql);
-      console.log(receivingUser);
-    receivingUsernames.push(receivingUser[element].username);
-    console.log("transaction element:" + transactions[element])
-        });
-  console.log("sendingUsernames: " + sendingUsernames);
-  console.log("receivingUsernames: " + receivingUsernames);
+
+  console.log("sendingIDS: " + sendingIDs);
+  console.log("receivingIDS: " + receivingIDs);
+
+  for (let id of sendingIDs){
+    let sendingUsernamesSQL = `SELECT username FROM user WHERE user_id =${id}`;
+    let username = await executeSQL(sendingUsernamesSQL);
+    sendingUsernames.push(username);
+  }
+  for (let id of receivingIDs){
+    let receivingUsernamesSQL = `SELECT username FROM user WHERE user_id =${id}`;
+    let username = await executeSQL(receivingUsernamesSQL);
+    receivingUsernames.push(username);
+  }
 
   let type = Array();
   for (element in transactions) {
@@ -311,7 +303,7 @@ app.get('/view_transactions', async (req, res) => {
     "status": status,
     "type": type,
     "sendingUsernames" : sendingUsernames,
-    "receivingUsernames" : receivingUsernames
+    "receivingUsernames" : receivingUsernames 
   });
 }); // view transactions
 
