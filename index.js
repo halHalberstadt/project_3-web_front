@@ -415,8 +415,12 @@ app.get(api_base+'/update_user/*', logger, async (req, res) => {
   let usrusrl = req.query.userListId    
   let usrbnk = req.query.bank
   let usrtrsl = req.query.transactionListId
+
+  let rounds = saltRounds;
   
-  let sql = `UPDATE user SET username='${usrnm}', password='${usrps}', admin=${usrad}, card_list_id=${usrcrdl}, card_list_id=${usrcrdl}, user_list_id=${usrusrl}, bank=${usrbnk}, transaction_list_id=${usrtrsl} WHERE user_id=${usrid};`;
+  hashword = bcrypt.hashSync(usrps, rounds);
+  
+  let sql = `UPDATE user SET username='${usrnm}', password='${hashword}', admin=${usrad}, card_list_id=${usrcrdl}, card_list_id=${usrcrdl}, user_list_id=${usrusrl}, bank=${usrbnk}, transaction_list_id=${usrtrsl} WHERE user_id=${usrid};`;
   let rows = await executeSQL(sql);
   // res.render('createReview', { "brands": rows });
   res.render('success');
@@ -479,9 +483,9 @@ app.get(api_base+'/new_transaction/*', logger, async (req, res) => {
   let rcvng = req.query.rid;
   let dscrptn = req.query.desc;
   
-  let params = [trnsctn, amnt, crrncy, fnlzd, sndng, rcvng, dscrptn];
+  let params = [amnt, crrncy, fnlzd, sndng, rcvng, dscrptn];
   let sql = `INSERT INTO transaction (amount, currency,	is_finalized,	sending_id,	receiving_id,	description)
-            VALUES(?, ?, ?, ?, ?, ?, ?)`;
+            VALUES(?, ?, ?, ?, ?, ?)`;
   // console.log(params);
   let rows = await executeSQL(sql, params);
   // console.log(rows);
