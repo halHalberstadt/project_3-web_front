@@ -550,7 +550,7 @@ app.get(api_base+'/update_transaction/*', logger, async (req, res) => {
 
 app.get(api_base+'/delete_transaction/*', logger, async (req, res) => {
   try {
-    let sql = `DELETE FROM transaction WHERE user_id=${req.query.tid}`;
+    let sql = `DELETE FROM transaction WHERE transaction_id=${req.query.tid}`;
     let rows = await executeSQL(sql);
   res.render('success');
   } catch (error) {
