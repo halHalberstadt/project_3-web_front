@@ -210,7 +210,8 @@ app.post('/delete_friend', isAuthenticated, async (req, res) => {
 app.get('/new_transaction', async (req, res) => {
   let userId = req.session.userID;
   let error = req.query.error
-  res.render('new_transaction', { "userId": userId, "error": error });
+  // let sql `SELECT user_id, username FROM user join userlist`
+  // res.render('new_transaction', { "userId": userId, "error": error });
 });
 
 app.post("/new_transaction", async function(req, res) {
