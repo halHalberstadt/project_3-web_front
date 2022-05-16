@@ -32,30 +32,40 @@
     </tr>
   </thead>
   <tbody>
-  <% for(element in transactions) { %>
-    <tr>
-      <th scope="row"><%=status[element]%></th>
-      <td><%=type[element]%></td>
-      <td><%=sendingUsernames[element][element].username%></td>
-      <td><%=receivingUsernames[element][element].username%></td> 
-      <td><%=transactions[element].amount%></td>
-      <td>
-      <% if(status[element] === "Pending" && type[element] === "Incoming") { %>
 
-        <div class="btn-group" role="group">
-        <form action="/accept_transaction" method="POST">
-          <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
-          
-          <button type="submit">Accept</button>
-        </form>
+    <% for(element in transactions) { %>
+      <tr>
+        <th scope="row"><%=status[element]%></th>
+        <td><%=type[element]%></td>
+        <td>
+          <% if (typeof sendingUsernames != "undefined" && sendingUsernames.length > 0) { %>
+          <%=sendingUsernames[element][0].username%> 
+            <% } %> </td>
         
-        <form action="/cancel_transaction" method="POST">
-          <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
+        <td>
+          <% if (typeof receivingUsernames != "undefined" && receivingUsernames.length > 0) { %>
+          <%=receivingUsernames[element][0].username%> 
+            <% } %></td> 
+        
+        <td><%=transactions[element].amount%></td>
+        <td>
+        <% if(status[element] === "Pending" && type[element] === "Incoming") { %>
+  
+          <div class="btn-group" role="group">
+          <form action="/accept_transaction" method="POST">
+            <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
+            
+            <button type="submit">Accept</button>
+          </form>
           
-          <button class="align_button" type="submit">Decline</button>
-        </form>
-        </div>
-      <% } %>
+          <form action="/cancel_transaction" method="POST">
+            <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
+            
+            <button class="align_button" type="submit">Decline</button>
+          </form>
+          </div>
+        <% } %>
+    
   
       <% if(status[element] === "Pending" && type[element] === "Outgoing") { %>
         <form action="/cancel_transaction" method="POST">

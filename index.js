@@ -289,6 +289,9 @@ app.get('/view_transactions', async (req, res) => {
     receivingUsernames.push(username);
   }
 
+  console.log("sendingUsernames: " + sendingUsernames);
+  console.log("receivingUsernames: " + receivingUsernames);
+
   let type = Array();
   for (element in transactions) {
     if (transactions[element].sending_id == userId) {
