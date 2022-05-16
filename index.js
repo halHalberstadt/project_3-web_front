@@ -210,8 +210,9 @@ app.post('/delete_friend', isAuthenticated, async (req, res) => {
 app.get('/new_transaction', async (req, res) => {
   let userId = req.session.userID;
   let error = req.query.error
-  // let sql `SELECT user_id, username FROM user join userlist`
-  // res.render('new_transaction', { "userId": userId, "error": error });
+  sql = `SELECT * FROM user_list INNER JOIN user ON user_list.other_user_id = user.user_id WHERE owner_id=${userID}`;
+  let friendsList = await executeSQL(sql);
+   res.render('new_transaction', { "userId": userId, "error": error });
 });
 
 app.post("/new_transaction", async function(req, res) {
