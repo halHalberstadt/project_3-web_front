@@ -168,13 +168,16 @@ app.post('/login', logger, async (req, res) => {
   }
 }); // login
 
-app.get('/new_transaction', async (req, res) => {
+app.get('/new_transaction', isAuthenticated, async (req, res) => {
   let userId = req.session.userID;
   let error = req.query.error
-  res.render('new_transaction', {"userId":userId, "error":error});
+    let getBankSql = `SELECT bank FROM user WHERE user_id = ?`;
+  let bank = (await executeSQL(getBankSql, [userId]))[0].bank;
+  
+  res.render('new_transaction', {"userId":userId, "error":error, "bank":bank});
 });
 
-app.post("/new_transaction", async function(req, res) {
+app.post("/new_transaction", isAuthenticated, async function(req, res) {
   try {
     let amt = req.body.amt;
     let cur = req.body.cur;
@@ -202,14 +205,14 @@ app.post("/new_transaction", async function(req, res) {
       let sql = `INSERT INTO transaction (amount, currency, is_finalized,	sending_id,	receiving_id,	description)
               VALUES(?, ?, ?, ?, ?, ?)`;
       let rows = await executeSQL(sql, params);
-      res.redirect('/');
+      res.redirect('/new_transaction');
     }
   } catch (error) {
     res.redirect('/new_transaction');
   }
 }); // new transaction
 
-app.get('/view_transactions', async (req, res) => {
+app.get('/view_transactions', isAuthenticated, async (req, res) => {
   let userId = req.session.userID;
   let getTransactionsSql = `SELECT * FROM transaction WHERE sending_id = ? OR receiving_id = ? ORDER BY is_finalized, CASE WHEN receiving_id LIKE ? THEN 0 ELSE 1 END`;
   let transactions = await executeSQL(getTransactionsSql, [userId, userId, userId]);
@@ -234,14 +237,18 @@ app.get('/view_transactions', async (req, res) => {
     }
   }
 
+  let getBankSql = `SELECT bank FROM user WHERE user_id = ?`;
+  let bank = (await executeSQL(getBankSql, [userId]))[0].bank;
+
   res.render('view_transactions', {
     "userId":userId, 
     "transactions":transactions, 
     "status":status, 
-    "type":type});
+    "type":type,
+    "bank":bank});
 }); // view transactions
 
-app.post("/accept_transaction", async function(req, res) {
+app.post("/accept_transaction", isAuthenticated, async function(req, res) {
   let tid = req.body.tid;
   console.log("TID: " + tid);
   // Get transaction
@@ -268,7 +275,7 @@ app.post("/accept_transaction", async function(req, res) {
   res.redirect('/view_transactions');
 }); // accept transaction
 
-app.post("/cancel_transaction", async function(req, res) {
+app.post("/cancel_transaction", isAuthenticated, async function(req, res) {
   let tid = req.body.tid;
   console.log("TID: " + tid);
   let getTransactionSql = `SELECT sending_id, amount FROM transaction WHERE transaction_id = ?`;
@@ -288,6 +295,66 @@ app.post("/cancel_transaction", async function(req, res) {
   let rows = await executeSQL(deleteTransactionSql, [tid]);
   res.redirect('/view_transactions');
 }); // cancel transaction
+
+app.get('/new_card', isAuthenticated, async (req, res) => {
+  let userId = req.session.userID;
+  let error = req.query.error
+  res.render('new_card', {"userId":userId, "error":error});
+});
+
+app.post("/new_card", isAuthenticated, async function(req, res) {
+  try {
+    let card_num = req.body.cnum;
+    let expiration = req.body.exp;
+    let cvv = req.body.cvv;
+    let holder_name = req.body.name;
+    let zip = req.body.zip;
+    let card_nickname = req.body.nick;
+
+    let userId = req.session.userID;
+
+    // Insert card into cards
+    let params = [card_num, expiration, cvv, holder_name, zip, card_nickname];
+    let sql = `INSERT INTO card (card_num, expiration, cvv, holder_name, zip, card_nickname) VALUES(?, ?, ?, ?, ?, ?)`;
+    await executeSQL(sql, params);
+    sql = `SELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'card'`;
+    let card_id = await executeSQL(sql);
+    console.log('Card_ID:' + card_id);
+    // Insert card into card lists
+    params = [userId, card_id];
+    sql = `INSERT INTO card_list (card_list_id, card_id) VALUES(?, ?)`;
+    await executeSQL(sql, params);
+    res.redirect('/view_cards');
+  } catch (error) {
+    res.redirect('/new_card');
+  }
+}); // new card
+
+app.get('/view_cards', isAuthenticated, async (req, res) => {
+  let userId = req.session.userID;
+  let sql = `SELECT card_id FROM card_list WHERE card_list_id = ?`;
+  let card_ids = await executeSQL(sql, [userId]);
+  console.log(card_ids);
+
+  // Setup extra info
+  let cards = Array();
+  // for(element in card_ids) {
+  //   sql = `SELECT * FROM card WHERE card_id = ?`;
+  //   cards[element] = await executeSQL(sql, [card_ids[element]])[0];
+  // }
+
+  res.render('view_cards', {
+    "userId":userId, 
+    "cards":cards});
+}); // view cards
+
+app.post("/delete_card", isAuthenticated, async function(req, res) {
+  res.redirect('/view_cards');
+}); // delete card
+
+app.post("/withdraw", isAuthenticated, async function(req, res) {
+  
+}); // withdraw
 
 
 /** API specific routes */
