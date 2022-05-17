@@ -1,0 +1,53 @@
+<%-include("partials/header.ejs")%>
+  <ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link" href="/home">Home</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/friends">Friends</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/new_transaction">New Transaction</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/view_transactions">View Transactions</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="/new_card">New Card</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/view_cards">View Cards</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/logout">Logout</a>
+  </li>
+</ul>
+  
+<form action="/new_card" method="POST">
+  <div class="center">
+    <br> <br>
+    <label for="cnum"><b>Card Number</b></label>
+    <input type="text" placeholder="Enter Card Number" name="cnum" class="center" required>
+    <br> <br>
+    <label for="exp"><b>Expiration</b></label>
+    <input type="month" placeholder="Enter Expiration Date" name="exp" required>
+    <br> <br>
+    <label for="cvv"><b>CVV</b></label>
+    <input type="number" placeholder="Enter CVV" name="cvv" value = "" min = "111" max="9999" onsubmit="validity.valid;" required>
+    <br> <br>
+    <label for="name"><b>Holder Name</b></label>
+    <input type="text" placeholder="Enter Name" name="name" value = "" required>
+    <br> <br>
+    <label for="zip"><b>Zip Code</b></label>
+    <input type="number" placeholder="Enter Zip" name="zip" value="" min = "10000" max="99999" onsubmit="validity.valid;" required>
+    <br> <br>
+    <label for="nick"><b>Card Nickname</b></label>
+    <input type="text" placeholder="Enter Nickname" name="nick" value = "" required>
+    <br><br> 
+    <button type="submit">Submit</button>
+  </div>
+
+  <span class="error"><%=error%></span>
+</form>
+  
+<%-include("partials/footer.ejs")%>
