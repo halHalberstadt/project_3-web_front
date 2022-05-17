@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const port = 3000
 const saltRounds = 10;
-const fetch = require('node-fetch');
+//const fetch = require('node-fetch');
 
 // middleware
 app.use(express.json());
