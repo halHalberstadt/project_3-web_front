@@ -6,3 +6,13 @@ $( ".mr-auto .nav-item" ).bind( "click", function(event) {
         });
         clickedItem.addClass( "active" );
     });
+
+$('#myModal').on('shown.bs.modal', function () {
+  $('#myInput').trigger('focus')
+})
+
+async function fetchData(url){
+  let response = await fetch(url);
+  let data = await response.json();
+  return data;
+}

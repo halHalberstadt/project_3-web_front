@@ -1,4 +1,5 @@
 <%-include("partials/header.ejs")%>
+
 <ul class="nav nav-tabs">
   <li class="nav-item">
     <a class="nav-link" href="/home">Home</a>
@@ -8,6 +9,9 @@
   </li>
   <li class="nav-item">
     <a class="nav-link" href="/new_transaction">New Transaction</a>
+  </li>
+  <li class="nav-item">   
+    <a class="nav-link" href="/my_profile">My Profile</a>
   </li>
   <li class="nav-item">
     <a class="nav-link active" href="/view_transactions">View Transactions</a>
@@ -29,6 +33,8 @@
   <br>
 </div>
 
+<h3 class = "text-center">Your transactions: </h3><br>
+  
 <table class="table">
   <thead>
     <tr>
@@ -41,30 +47,40 @@
     </tr>
   </thead>
   <tbody>
-  <% for(element in transactions) { %>
-    <tr>
-      <th scope="row"><%=status[element]%></th>
-      <td><%=type[element]%></td>
-      <td><%=transactions[element].sending_id%></td>
-      <td><%=transactions[element].receiving_id%></td>
-      <td><%=transactions[element].amount%></td>
-      <td>
-      <% if(status[element] === "Pending" && type[element] === "Incoming") { %>
 
-        <div class="btn-group" role="group">
-        <form action="/accept_transaction" method="POST">
-          <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
-          
-          <button type="submit">Accept</button>
-        </form>
+    <% for(element in transactions) { %>
+      <tr>
+        <th scope="row"><%=status[element]%></th>
+        <td><%=type[element]%></td>
+        <td>
+          <% if (typeof sendingUsernames != "undefined" && sendingUsernames.length > 0) { %>
+          <%=sendingUsernames[element][0].username%> 
+            <% } %> </td>
         
-        <form action="/cancel_transaction" method="POST">
-          <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
+        <td>
+          <% if (typeof receivingUsernames != "undefined" && receivingUsernames.length > 0) { %>
+          <%=receivingUsernames[element][0].username%> 
+            <% } %></td> 
+        
+        <td><%=transactions[element].amount%></td>
+        <td>
+        <% if(status[element] === "Pending" && type[element] === "Incoming") { %>
+  
+          <div class="btn-group" role="group">
+          <form action="/accept_transaction" method="POST">
+            <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
+            
+            <button type="submit">Accept</button>
+          </form>
           
-          <button class="align_button" type="submit">Decline</button>
-        </form>
-        </div>
-      <% } %>
+          <form action="/cancel_transaction" method="POST">
+            <input type="hidden" name="tid" value="<%=transactions[element].transaction_id%>">
+            
+            <button class="align_button" type="submit">Decline</button>
+          </form>
+          </div>
+        <% } %>
+    
   
       <% if(status[element] === "Pending" && type[element] === "Outgoing") { %>
         <form action="/cancel_transaction" method="POST">
