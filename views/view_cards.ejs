@@ -1,0 +1,66 @@
+<%-include("partials/header.ejs")%>
+<ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link" href="/home">Home</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/friends">Friends</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/new_transaction">New Transaction</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/view_transactions">View Transactions</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/new_card">New Card</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="/view_cards">View Cards</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/logout">Logout</a>
+  </li>
+</ul>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Nickname</th>
+      <th scope="col">Holder Name</th>
+      <th scope="col">Card Number</th>
+      <th scope="col">Expiration</th>
+      <th scope="col">CVV</th>
+      <th scope="col">Zip Code</th>
+      <th scope="col">Options</th>
+    </tr>
+  </thead>
+  <tbody>
+  <% for(element in cards) { %>
+    <tr>
+      <th scope="row"><%=cards[element].card_nickname%></th>
+      <td><%=cards[element].holder_name%></td>
+      <td><%=cards[element].card_num%></td>
+      <td><%=cards[element].expiration%></td>
+      <td><%=cards[element].cvv%></td>
+      <td><%=cards[element].zip%></td>
+      <td>
+        <div class="btn-group" role="group">
+        <form action="/withdraw" method="POST">
+          <input type="hidden" name="tid" value="<%=cards[element].card_id%>">
+          <button type="submit">Withdraw</button>
+        </form>
+        
+        <form action="/delete_card" method="POST">
+          <input type="hidden" name="tid" value="<%=cards[element].card_id%>">
+          
+          <button class="align_button" type="submit">Delete</button>
+        </form>
+        </div>
+      </td>
+    </tr>
+  <% } %>
+  </tbody>
+</table>
+  
+<%-include("partials/footer.ejs")%>
