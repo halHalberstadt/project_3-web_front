@@ -112,7 +112,7 @@ app.post('/login', logger, async (req, res) => {
     req.session.userListID = userData[0].user_list_id;
     req.session.transListID = userData[0].transaction_list_id;
 
-    res.redirect('/view_transactions')
+    res.redirect('/home')
     //res.render('home', {"userData":userData});
   } else {
     alert("login failed");
@@ -122,7 +122,70 @@ app.post('/login', logger, async (req, res) => {
 
 
 app.get('/home', isAuthenticated, async (req, res) => {
-  res.redirect('/view_transactions');
+    let userId = req.session.userID;
+  let getTransactionsSql = `SELECT * FROM transaction WHERE sending_id = ? OR receiving_id = ? ORDER BY is_finalized, CASE WHEN receiving_id LIKE ? THEN 0 ELSE 1 END`;
+  let transactions = await executeSQL(getTransactionsSql, [userId, userId, userId]);
+  console.log(transactions);
+  console.log("tranLength: " + transactions.length);
+
+  // Setup extra info
+  let status = Array();
+  for (element in transactions) {
+    if (transactions[element].is_finalized) {
+      status[element] = "Finalized";
+    } else {
+      status[element] = "Pending";
+    }
+  }
+  let sendingIDs = Array();
+  let receivingIDs = Array();
+  let sendingUsernames = Array();
+  let receivingUsernames = Array();
+
+    for(element in transactions) {
+      sendingIDs.push(transactions[element].sending_id); 
+      receivingIDs.push(transactions[element].receiving_id); 
+  }
+
+  console.log("sendingIDS: " + sendingIDs);
+  console.log("receivingIDS: " + receivingIDs);
+
+  for (let id of sendingIDs){
+    let sendingUsernamesSQL = `SELECT username FROM user WHERE user_id =${id}`;
+    let username = await executeSQL(sendingUsernamesSQL);
+    sendingUsernames.push(username);
+  }
+  for (let id of receivingIDs){
+    let receivingUsernamesSQL = `SELECT username FROM user WHERE user_id =${id}`;
+    let username = await executeSQL(receivingUsernamesSQL);
+    receivingUsernames.push(username);
+  }
+
+  console.log("sendingUsernames: " + sendingUsernames);
+  console.log("receivingUsernames: " + receivingUsernames);
+
+  let type = Array();
+  for (element in transactions) {
+    if (transactions[element].sending_id == userId) {
+      type[element] = "Outgoing";
+    } else {
+      type[element] = "Incoming";
+    }
+  }
+
+  let getBankSql = `SELECT bank FROM user WHERE user_id = ?`;
+  let bank = (await executeSQL(getBankSql, [userId]))[0].bank;
+
+  res.render('view_transactions', {
+
+    "userId": userId,
+    "transactions": transactions,
+    "status": status,
+    "type": type,
+    "sendingUsernames" : sendingUsernames,
+    "receivingUsernames" : receivingUsernames,
+    "bank":bank});
+    
 });
 
 
