@@ -196,6 +196,18 @@ app.get('/my_profile', async (req, res) => {
   res.render('profile', { "myInfo": myInfo });
 });
 
+app.post('/update_profile', isAuthenticated, async (req, res) => {
+  let userID = req.session.userID;
+  let newUsername = req.body.newuname;
+  
+  let sql = `UPDATE user SET username = "${newUsername}" WHERE user_id = ${userID}`;
+
+  await executeSQL(sql);
+
+  res.redirect('/my_profile');
+
+});
+
 app.get('/friends', isAuthenticated, async (req, res) => {
   let ownerID = req.session.userID;
 
